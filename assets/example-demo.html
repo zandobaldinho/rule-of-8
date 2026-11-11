@@ -1,0 +1,1215 @@
+<title>Demo regra de 8</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap">
+<style>
+/* Layout: casca do sistema (menu 224 + área que rola). Duas telas no mesmo
+   arquivo: "atual" copia a /vendas/painel de hoje (medidas do código),
+   "proposta" é a mesma informação refeita na grade de 8 e nas 8 regras de ouro. */
+:root {
+  --app: #111315; --surface: #1c1e21; --surface-2: #272a2e; --hairline: #3a3f45; --borda: #77808a;
+  --ink: #f5f5f7; --ink-2: #c5c8cd; --ink-3: #a9afb8;
+  --accent: #d4ff1a; --on-accent: #0a0a0b; --danger: #f06560; --warn: #d9a441; --ok: #5fb37a;
+  --serie: #3987e5; --serie-trilho: #1f3350; --comparada: #8a9099;
+  --r1: #256abf; --r2: #3987e5; --r3: #6da7ec; --r4: #9ec5f4; --r5: #cde2fb;
+  --grade: rgb(212 255 26 / 0.10); --grade-forte: rgb(212 255 26 / 0.22); --overlay: rgb(0 0 0 / 0.55);
+  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --app: #f4f3ee; --surface: #ffffff; --surface-2: #eeede8; --hairline: #d6d5cf; --borda: #787870;
+  --ink: #20211f; --ink-2: #51534e; --ink-3: #666963;
+  --accent: #487000; --on-accent: #ffffff; --danger: #c8322d; --warn: #925600; --ok: #267341;
+  --serie: #265bb7; --serie-trilho: #dbe7fa; --comparada: #8b8d87;
+  --r1: #86b6ef; --r2: #5598e7; --r3: #2a78d6; --r4: #1c5cab; --r5: #104281;
+  --grade: rgb(72 112 0 / 0.10); --grade-forte: rgb(72 112 0 / 0.24); --overlay: rgb(20 20 20 / 0.45);
+  color-scheme: light;
+} }
+:root[data-theme="light"] {
+  --app: #f4f3ee; --surface: #ffffff; --surface-2: #eeede8; --hairline: #d6d5cf; --borda: #787870;
+  --ink: #20211f; --ink-2: #51534e; --ink-3: #666963;
+  --accent: #487000; --on-accent: #ffffff; --danger: #c8322d; --warn: #925600; --ok: #267341;
+  --serie: #265bb7; --serie-trilho: #dbe7fa; --comparada: #8b8d87;
+  --r1: #86b6ef; --r2: #5598e7; --r3: #2a78d6; --r4: #1c5cab; --r5: #104281;
+  --grade: rgb(72 112 0 / 0.10); --grade-forte: rgb(72 112 0 / 0.24); --overlay: rgb(20 20 20 / 0.45);
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--app); color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 24px; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, p { margin: 0; }
+
+.casca { display: flex; height: 100%; }
+.lateral { width: 224px; flex-shrink: 0; background: var(--surface); box-shadow: inset -1px 0 var(--hairline); display: flex; flex-direction: column; padding: 24px 8px; gap: 8px; }
+.marca { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; margin-bottom: 8px; font-weight: 700; }
+.marca i, .barra-topo i { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: inline-block; }
+.item-nav { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 8px; color: var(--ink-2); font-size: 14px; border: 0; background: none; text-align: left; width: 100%; }
+.item-nav:hover { background: var(--surface-2); color: var(--ink); }
+.item-nav[aria-current] { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+.item-nav svg { width: 16px; height: 16px; flex-shrink: 0; }
+.area { flex: 1; min-width: 0; overflow-y: auto; }
+.conteudo { position: relative; max-width: 1280px; margin: 0 auto; padding-block: 24px 96px; padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); }
+.grade .conteudo::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background-image: linear-gradient(to bottom, var(--grade-forte) 1px, transparent 1px), linear-gradient(to bottom, var(--grade) 1px, transparent 1px), linear-gradient(to right, var(--grade) 1px, transparent 1px);
+  background-size: 100% 64px, 100% 8px, 8px 100%; }
+.barra-topo { display: none; }
+
+/* Botões comuns às duas telas */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; height: 40px; padding: 0 16px; border-radius: 8px; font-size: 14px; line-height: 24px; border: 0; }
+.btn svg { width: 16px; height: 16px; }
+.btn-prim { background: var(--ink); color: var(--app); font-weight: 600; }
+.btn-acento { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.btn-sec { background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--ink); font-weight: 500; }
+.btn-sec:hover { background: var(--surface-2); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-p { height: 32px; padding: 0 12px; font-size: 12px; line-height: 16px; }
+
+/* ═══════════════ TELA DE HOJE (medidas lidas do código atual) ═══════════════ */
+.atual { display: grid; gap: 20px; }
+.atual .cabt { display: flex; gap: 12px; align-items: flex-start; }
+.atual .cabt .ic { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; flex-shrink: 0; }
+.atual .cabt h1 { font-size: 24px; line-height: 32px; font-weight: 600; }
+.atual .cabt p { font-size: 14px; line-height: 20px; color: var(--ink-2); margin-top: 2px; }
+.atual .navm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.atual .navm .btn { height: 44px; padding: 0 14px; }
+.atual .navm strong { padding: 0 8px; font-size: 14px; }
+.atual .caixa { border-radius: 12px; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); padding: 16px; min-width: 0; }
+.atual .form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.atual label { font-size: 14px; line-height: 20px; color: var(--ink-2); }
+.atual label input { display: block; margin-top: 4px; height: 44px; border-radius: 8px; border: 1px solid var(--hairline); background: var(--app); padding: 0 12px; font-size: 16px; }
+.atual .k3 { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+.atual .k3 p:first-child, .atual .t4 p { font-size: 14px; line-height: 20px; color: var(--ink-2); }
+.atual .k3 .v { margin-top: 4px; font-size: 20px; line-height: 28px; font-weight: 700; }
+.atual h2 { font-size: 16px; line-height: 24px; font-weight: 600; }
+.atual .exp { font-size: 14px; line-height: 20px; color: var(--ink-3); }
+.atual .t4 { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0,1fr)); margin-top: 12px; }
+.atual .t4 > div { border-radius: 8px; background: var(--app); padding: 12px; }
+.atual .t4 strong { display: block; margin-top: 4px; font-size: 20px; line-height: 28px; }
+.atual .txt { font-size: 14px; line-height: 20px; color: var(--ink-2); margin-top: 8px; }
+.atual table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px; text-align: left; }
+.atual th, .atual td { padding: 8px; }
+.atual thead tr { color: var(--ink-2); box-shadow: inset 0 -1px var(--hairline); }
+.atual tbody tr { box-shadow: inset 0 -1px var(--hairline); }
+.atual .rolar { overflow-x: auto; }
+.atual .k8 { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0,1fr)); }
+.atual .k8 > div { border-radius: 16px; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); padding: 16px; }
+.atual .k8 p { font-size: 13px; line-height: 18px; color: var(--ink-3); }
+.atual .k8 strong { display: block; font-size: 24px; line-height: 32px; margin-top: 4px; }
+.atual .camp { display: block; margin-top: 4px; width: 176px; height: 44px; border-radius: 8px; border: 1px solid var(--borda); background: var(--app); padding: 0 12px; font-size: 16px; }
+
+/* ═══════════════ PROPOSTA (grade de 8) ═══════════════ */
+.prop { display: grid; gap: 24px; }
+.p-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.p-cab h1 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.01em; }
+.p-cab .sub { margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.p-cab .dir { display: flex; align-items: center; gap: 16px; }
+.atualizado { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.controles { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; }
+.grupo { display: flex; align-items: center; gap: 8px; }
+.grupo > span { font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.passo { display: flex; align-items: center; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); height: 40px; }
+.passo button { width: 40px; height: 40px; border: 0; background: none; color: var(--ink-2); border-radius: 8px; display: grid; place-items: center; }
+.passo button:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+.passo button:disabled { opacity: .3; cursor: not-allowed; }
+.passo button svg { width: 16px; height: 16px; }
+.passo .rotulo { min-width: 120px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; padding: 0 8px; }
+.sel { height: 40px; border-radius: 8px; border: 0; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); padding: 0 16px; font-size: 14px; }
+
+.cartao { position: relative; background: var(--surface); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--hairline); padding: 24px; min-width: 0; }
+.rot { font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Meta do dia */
+.dia-topo { display: flex; justify-content: space-between; align-items: center; height: 24px; }
+.link { border: 0; background: none; padding: 0; color: var(--ink-2); font-size: 12px; line-height: 24px; text-decoration: underline; text-underline-offset: 3px; }
+.dia-num { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; min-height: 40px; flex-wrap: wrap; }
+.dia-num strong { font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.01em; }
+.dia-num > span:not(.pill) { color: var(--ink-2); font-size: 16px; line-height: 24px; }
+.dia-num .pill { margin-left: auto; align-self: center; }
+.trilho { height: 16px; border-radius: 8px; background: var(--serie-trilho); margin-top: 16px; overflow: hidden; position: relative; }
+.trilho i { position: absolute; inset: 0 auto 0 0; background: var(--serie); border-radius: 8px; transition: width .3s ease; }
+.trilho.ok i { background: var(--ok); }
+@media (prefers-reduced-motion: reduce) { .trilho i, .mini i { transition: none; } }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-top: 16px; }
+.stat { display: grid; min-width: 0; }
+.stat span { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.stat b { font-size: 16px; line-height: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.como { margin-top: 16px; padding-top: 16px; box-shadow: inset 0 1px var(--hairline); color: var(--ink-2); font-size: 14px; line-height: 24px; max-width: 72ch; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+.prop { container-type: inline-size; }
+@container (max-width: 1064px) { .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@container (max-width: 560px) { .kpis { grid-template-columns: 1fr; } }
+.kpi { display: grid; grid-template-rows: 16px 32px 32px; gap: 8px; }
+.kpi .v { font-size: 24px; line-height: 32px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .pe { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.kpi .pe small { font-size: 12px; line-height: 16px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; box-shadow: inset 0 0 0 1px var(--hairline); color: var(--ink-2); }
+.pill.ok { color: var(--ok); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 40%, transparent); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.pill.atr { color: var(--danger); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 40%, transparent); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.pill.ate { color: var(--warn); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+
+.linha2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
+.c-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 24px; flex-wrap: wrap; }
+.c-topo h2 { font-size: 16px; line-height: 24px; font-weight: 600; }
+.c-sub { margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.legenda { display: flex; flex-wrap: wrap; gap: 0 16px; font-size: 12px; line-height: 24px; color: var(--ink-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.legenda i { width: 16px; height: 2px; background: var(--serie); display: inline-block; }
+.legenda i.cmp { background: var(--comparada); }
+.legenda i.prj { background: none; border-top: 2px dashed var(--serie); height: 0; }
+.legenda i.sq { width: 8px; height: 8px; border-radius: 2px; }
+.graf { position: relative; margin-top: 16px; height: 240px; }
+.graf svg { display: block; width: 100%; height: 240px; overflow: visible; }
+.graf text { font-family: var(--font); font-size: 12px; fill: var(--ink-3); }
+.graf .rotfim { fill: var(--ink); font-weight: 600; }
+.dica { position: absolute; pointer-events: none; background: var(--ink); color: var(--app); border-radius: 8px; padding: 8px 12px; font-size: 12px; line-height: 16px; white-space: nowrap; z-index: 3; transform: translate(-50%, -100%); }
+.dica b { display: block; }
+
+.cobrar { display: grid; margin-top: 16px; }
+.cob { display: flex; align-items: center; gap: 16px; height: 64px; box-shadow: inset 0 -1px var(--hairline); }
+.cob:last-child { box-shadow: none; }
+.cob .t { flex: 1; min-width: 0; display: grid; }
+.cob .t b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cob .t span { font-size: 12px; line-height: 16px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cob.feito .t b { color: var(--ink-3); text-decoration: line-through; }
+
+/* Tabela de vendedores */
+.t-topo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; min-height: 32px; }
+.t-topo h2 { font-size: 16px; line-height: 24px; font-weight: 600; }
+.chave { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink-2); font-size: 12px; font-weight: 600; }
+.chave[aria-pressed="true"] { background: var(--ink); color: var(--app); }
+.tab { margin-top: 16px; }
+.tab-cab, .tab-lin { display: grid; grid-template-columns: minmax(144px, 1.1fr) minmax(176px, 1.3fr) minmax(112px, .8fr) minmax(176px, 1.3fr) 64px minmax(192px, 1.4fr); column-gap: 24px; align-items: center; }
+.tab-cab { height: 40px; box-shadow: inset 0 -1px var(--hairline); }
+.tab-cab button { border: 0; background: none; padding: 0; text-align: left; font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; display: inline-flex; gap: 4px; align-items: center; height: 40px; }
+.tab-cab button[aria-sort="ascending"]::after { content: "↑"; }
+.tab-cab button[aria-sort="descending"]::after { content: "↓"; }
+.tab-cab .dirr, .tab-lin .dirr { justify-self: end; }
+.tab-lin { height: 56px; box-shadow: inset 0 -1px var(--hairline); }
+.tab-lin:last-child { box-shadow: none; }
+.tab-lin .nome { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.par-v { display: grid; gap: 4px; }
+.par-v .vals { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; line-height: 20px; font-variant-numeric: tabular-nums; }
+.par-v .vals small { color: var(--ink-3); font-size: 12px; }
+.mini { height: 8px; border-radius: 4px; background: var(--serie-trilho); position: relative; overflow: hidden; }
+.mini i { position: absolute; inset: 0 auto 0 0; background: var(--serie); border-radius: 4px; transition: width .3s ease; }
+.mini.ok i { background: var(--ok); }
+.falta { font-variant-numeric: tabular-nums; }
+.falta.zero { color: var(--ok); font-weight: 600; }
+.seg { display: flex; gap: 2px; height: 8px; border-radius: 4px; overflow: hidden; }
+.seg i { display: block; height: 8px; min-width: 2px; }
+.rec { display: grid; gap: 8px; }
+.rec small { font-size: 12px; line-height: 16px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c1 { background: var(--r1); } .c2 { background: var(--r2); } .c3 { background: var(--r3); } .c4 { background: var(--r4); } .c5 { background: var(--r5); }
+
+/* Diálogo da meta, atalhos, toast */
+.fundo { position: fixed; inset: 0; background: var(--overlay); z-index: 20; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+.dlg { width: min(480px, 100%); background: var(--app); border-radius: 16px; box-shadow: 0 0 0 1px var(--hairline), 0 24px 48px rgb(0 0 0 / .3); padding: 24px; display: grid; gap: 24px; }
+.dlg h2 { font-size: 20px; line-height: 32px; font-weight: 600; }
+.dlg .campo { display: grid; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; }
+.dlg .campo input { height: 48px; border-radius: 8px; border: 1px solid var(--borda); background: var(--surface); padding: 0 16px; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
+.previa { display: grid; gap: 8px; border-radius: 8px; background: var(--surface); padding: 16px; }
+.previa div { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.previa span { color: var(--ink-3); }
+.previa .seta { color: var(--ink-3); padding: 0 8px; }
+.alerta { font-size: 14px; line-height: 24px; color: var(--warn); }
+.dlg .rod { display: flex; justify-content: flex-end; gap: 8px; }
+.atalhos { display: grid; gap: 8px; }
+.atalhos div { display: flex; justify-content: space-between; gap: 16px; height: 32px; align-items: center; }
+kbd { font-family: var(--mono); font-size: 12px; line-height: 16px; padding: 4px 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink); }
+.toast { position: fixed; left: 50%; bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 16px)); transform: translateX(-50%); background: var(--ink); color: var(--app); padding: 8px 8px 8px 16px; border-radius: 8px; font-size: 14px; line-height: 24px; z-index: 40; max-width: calc(100% - 32px); display: flex; gap: 16px; align-items: center; }
+.toast button { border: 0; background: none; color: var(--app); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; height: 32px; padding: 0 8px; }
+.vivo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Marcas das 8 regras (só com o botão "8 regras") */
+.regra { display: none; position: absolute; top: -8px; right: -8px; z-index: 6; min-width: 24px; height: 24px; padding: 0 8px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font: 700 12px/24px var(--mono); text-align: center; pointer-events: none; }
+.regras .regra { display: block; }
+.rel { position: relative; }
+.painel-regras { position: fixed; top: 0; right: 0; bottom: 0; width: min(352px, 100%); background: var(--app); box-shadow: -1px 0 var(--hairline), -16px 0 32px rgb(0 0 0 / .2); z-index: 25; padding: 24px max(24px, env(safe-area-inset-right, 0px)) 96px 24px; overflow-y: auto; display: grid; gap: 16px; align-content: start; }
+.painel-regras h2 { font-size: 16px; line-height: 24px; }
+.painel-regras ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+.painel-regras li { display: grid; grid-template-columns: 32px 1fr; gap: 8px; }
+.painel-regras li b { display: block; }
+.painel-regras li span { font-size: 12px; line-height: 16px; color: var(--ink-2); }
+.painel-regras .n { width: 24px; height: 24px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font: 700 12px/24px var(--mono); text-align: center; }
+.regras .area { margin-right: min(352px, 100%); }
+
+/* Controle do apresentador */
+.ctl { position: fixed; right: max(16px, calc(env(safe-area-inset-right, 0px) + 16px)); bottom: max(16px, calc(env(safe-area-inset-bottom, 0px) + 16px)); z-index: 30; display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--hairline), 0 8px 24px rgb(0 0 0 / .25); opacity: .55; transition: opacity .15s; }
+.ctl:hover, .ctl:focus-within { opacity: 1; }
+.ctl button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.ctl button[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); }
+.medida { position: fixed; z-index: 35; pointer-events: none; padding: 0 8px; border-radius: 6px; font: 500 12px/24px var(--mono); background: var(--ok); color: var(--on-accent); white-space: nowrap; }
+.medida.fora { background: var(--danger); }
+.alvo { outline: 1px dashed var(--accent) !important; outline-offset: -1px; }
+
+/* Tablet e celular */
+.so-cel { display: none; }
+@media (max-width: 1100px) {
+  .linha2 { grid-template-columns: 1fr; }
+  .tab-cab { display: none; }
+  .tab-lin { grid-template-columns: 1fr 1fr; grid-template-areas: "nome nome" "hoje mes" "falta ped" "rec rec"; row-gap: 16px; height: auto; padding-block: 16px; }
+  .tab-lin > :nth-child(1) { grid-area: nome; } .tab-lin > :nth-child(2) { grid-area: hoje; } .tab-lin > :nth-child(3) { grid-area: falta; }
+  .tab-lin > :nth-child(4) { grid-area: mes; } .tab-lin > :nth-child(5) { grid-area: ped; } .tab-lin > :nth-child(6) { grid-area: rec; }
+  .tab-lin .dirr { justify-self: start; }
+  .so-cel { display: inline; }
+  .atual .t4, .atual .k8 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 767px) {
+  .lateral { display: none; }
+  .casca { flex-direction: column; }
+  .barra-topo { display: flex; align-items: center; gap: 8px; height: 56px; flex-shrink: 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); background: var(--surface); box-shadow: inset 0 -1px var(--hairline); font-weight: 700; }
+  .conteudo { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .cartao { padding: 16px; }
+  .p-cab { flex-direction: column; }
+  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .dia-num strong { font-size: 24px; }
+  .dia-num .pill { margin-left: 0; }
+  .btn, .passo, .passo button, .sel { height: 48px; } .passo button { width: 48px; }
+  .btn-p { height: 48px; font-size: 14px; }
+  .kpi { grid-template-rows: 16px 32px 48px; }
+  .cob { height: 80px; }
+  .atual .k3 { grid-template-columns: 1fr; }
+  .ctl { left: max(16px, calc(env(safe-area-inset-left, 0px) + 16px)); right: auto; }
+  .regras .area { margin-right: 0; }
+}
+
+/* ═══════════════ PEDIDOS ═══════════════ */
+.abas-topo { margin-left: auto; display: flex; gap: 4px; }
+.abas-topo button { height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--ink-3); font-size: 14px; font-weight: 600; }
+.abas-topo button[aria-current] { background: var(--surface-2); color: var(--ink); }
+/* Hoje: medidas lidas do código atual */
+.pd-h { display: block; }
+.pd-h .h-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.pd-h .h-cab h1 { font-size: 24px; line-height: 32px; font-weight: 600; }
+.pd-h .h-cab p { margin-top: 4px; font-size: 13px; line-height: 21px; color: var(--ink-2); }
+.pd-h .h-cab .b { display: flex; gap: 8px; }
+.pd-h .btn { height: 44px; padding: 0 14px; }
+.pd-h .h-abas { display: flex; gap: 4px; box-shadow: inset 0 -1px var(--hairline); margin-bottom: 12px; overflow-x: auto; }
+.pd-h .h-abas button { min-height: 44px; padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--ink-3); font-size: 14px; font-weight: 500; white-space: nowrap; }
+.pd-h .h-abas button[aria-selected="true"] { border-bottom-color: var(--ink); color: var(--ink); }
+.pd-h .h-abas .n { margin-left: 6px; padding: 0 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hairline); font-size: 12px; color: var(--ink-2); }
+.pd-h .h-busca { display: flex; gap: 8px; margin-bottom: 8px; }
+.pd-h .h-busca label { flex: 1; display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); color: var(--ink-3); font-size: 16px; }
+.pd-h .h-regua { margin-bottom: 12px; font-size: 14px; line-height: 20px; color: var(--ink-3); }
+.pd-h .h-tab { border-radius: 8px; box-shadow: 0 0 0 1px var(--hairline); background: var(--surface); overflow: hidden; }
+.pd-h .h-cabt, .pd-h .h-lin > a { display: grid; grid-template-columns: 92px minmax(200px,1.5fr) minmax(140px,1fr) 104px 112px minmax(170px,1.2fr); gap: 12px; align-items: center; padding: 6px 16px; }
+.pd-h .h-cabt { padding: 8px 16px; background: var(--surface-2); font-size: 13px; font-weight: 600; color: var(--ink-3); grid-template-columns: 92px minmax(200px,1.5fr) minmax(140px,1fr) 104px 112px minmax(170px,1.2fr) 200px; }
+.pd-h .h-lin { display: grid; grid-template-columns: 1fr 200px; min-height: 52px; box-shadow: inset 0 -1px var(--hairline); font-size: 13px; line-height: 18px; }
+.pd-h .h-lin > a { color: inherit; text-decoration: none; min-width: 0; }
+.pd-h .h-lin .nm { font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-h .h-lin .sb { color: var(--ink-3); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-h .h-lin .atr { color: var(--danger); font-weight: 600; }
+.pd-h .h-ac { display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+.pd-h .h-ac .btn { height: 34px; padding: 0 8px; font-size: 13px; flex: 1; }
+.pd-h .h-ac .lx { width: 34px; height: 34px; border: 0; border-radius: 8px; background: none; color: var(--ink-3); display: grid; place-items: center; }
+.pd-h .h-ac .lx svg { width: 15px; height: 15px; }
+@media (max-width: 1100px) { .pd-h .h-cabt { display: none; } .pd-h .h-lin { grid-template-columns: 1fr; } .pd-h .h-lin > a { grid-template-columns: 1fr; } .pd-h .h-lin > a > :nth-child(3), .pd-h .h-lin > a > :nth-child(4), .pd-h .h-lin > a > :nth-child(5) { display: none; } .pd-h .h-ac { padding: 0 16px 12px; } }
+
+/* Proposta */
+.filas { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px; margin: -4px; }
+.fila { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--ink-2); font-size: 14px; font-weight: 500; white-space: nowrap; }
+.fila b { font-size: 12px; line-height: 16px; font-weight: 700; padding: 0 8px; border-radius: 8px; background: var(--surface-2); color: var(--ink); font-variant-numeric: tabular-nums; }
+.fila[aria-selected="true"] { background: var(--ink); color: var(--app); box-shadow: none; font-weight: 600; }
+.fila[aria-selected="true"] b { background: var(--app); color: var(--ink); }
+.fila.trava b { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+.busca-pd { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px 0 16px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--hairline); background: var(--surface); }
+.busca-pd:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
+.busca-pd input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 16px; line-height: 24px; color: var(--ink); }
+.busca-pd input::placeholder { color: var(--ink-3); }
+.busca-pd svg { width: 16px; height: 16px; color: var(--ink-3); flex-shrink: 0; }
+.linha-busca-pd { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.linha-busca-pd .busca-pd { max-width: 480px; }
+@container (max-width: 560px) { .kpis.k-compacto { grid-template-columns: repeat(2, minmax(0,1fr)); } .k-compacto .kpi { padding: 16px; } .k-compacto .kpi .v { font-size: 20px; } .k-compacto .kpi .pe .pill { overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; line-height: 24px; } }
+.kpi.clic { cursor: pointer; text-align: left; border: 0; color: inherit; font: inherit; width: 100%; }
+.kpi.clic:hover { box-shadow: inset 0 0 0 1px var(--borda); }
+.kpi.clic[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+.pl { margin-top: 16px; }
+.pl-cab, .pl-lin { display: grid; grid-template-columns: 96px minmax(176px, 1.4fr) minmax(144px, 1fr) 128px 112px minmax(176px, 1.2fr) 176px; column-gap: 16px; align-items: center; }
+.pl-cab { height: 40px; box-shadow: inset 0 -1px var(--hairline); }
+.pl-cab button, .pl-cab span { border: 0; background: none; padding: 0; text-align: left; font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; height: 40px; display: inline-flex; align-items: center; gap: 4px; }
+.pl-cab button[aria-sort="ascending"]::after { content: "↑"; } .pl-cab button[aria-sort="descending"]::after { content: "↓"; }
+.pl-lin { height: 56px; box-shadow: inset 0 -1px var(--hairline); cursor: pointer; border-radius: 8px; }
+.pl-lin:last-child { box-shadow: none; }
+.pl-lin:hover { background: var(--surface-2); }
+.pl-lin.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+.pl-lin.feito { background: color-mix(in srgb, var(--ok) 8%, transparent); }
+.pl-lin > * { min-width: 0; }
+.pl-num { font-family: var(--mono); font-size: 12px; color: var(--ink-2); padding-left: 8px; }
+.pl-cli { display: grid; }
+.pl-cli b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; line-height: 24px; }
+.pl-cli span { font-size: 12px; line-height: 16px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-cli .msg { color: var(--accent); font-weight: 600; }
+.pl-carro { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-envio { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pl-valor { font-variant-numeric: tabular-nums; }
+.pl-falta { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-falta .mais { margin-left: 8px; }
+.pl-ac { display: flex; justify-content: flex-end; padding-right: 8px; }
+.pl-ac .btn { height: 32px; padding: 0 12px; font-size: 12px; line-height: 16px; width: 160px; }
+.pl-ok { display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ok); font-weight: 600; padding-right: 8px; }
+.pl-ok button { border: 0; background: none; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; font-size: 12px; padding: 0; height: 32px; }
+.mais { display: inline-flex; padding: 0 8px; border-radius: 8px; background: var(--surface-2); color: var(--ink-3); font-size: 12px; line-height: 16px; font-weight: 600; }
+.pl-vazio { padding: 32px 0; text-align: center; color: var(--ink-3); }
+
+/* Atrasados em destaque */
+.atrasos { background: color-mix(in srgb, var(--danger) 6%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 45%, transparent); }
+.atrasos .c-topo h2 { color: var(--danger); }
+.at-lista { display: grid; margin-top: 16px; }
+.at-lin { display: grid; grid-template-columns: 64px minmax(0, 1.4fr) minmax(0, 1.2fr) 176px; gap: 16px; align-items: center; height: 64px; box-shadow: inset 0 -1px color-mix(in srgb, var(--danger) 25%, transparent); cursor: pointer; border-radius: 8px; }
+.at-lin:last-child { box-shadow: none; }
+.at-lin:hover { background: color-mix(in srgb, var(--danger) 8%, transparent); }
+.at-dias { display: grid; place-items: center; height: 48px; border-radius: 8px; background: var(--danger); color: var(--on-accent); font-size: 20px; line-height: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.at-dias small { display: block; font-size: 12px; line-height: 16px; font-weight: 600; margin-top: -8px; }
+.at-q { display: grid; min-width: 0; }
+.at-q b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-q span { font-size: 12px; line-height: 16px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-quem { display: grid; min-width: 0; }
+.at-quem .pill { justify-self: start; }
+.at-quem span:last-child { font-size: 12px; line-height: 16px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-lin .btn { height: 32px; padding: 0 12px; font-size: 12px; line-height: 16px; width: 160px; justify-self: end; margin-right: 8px; }
+.pl-lin.atrasado { box-shadow: inset 4px 0 0 var(--danger), inset 0 -1px var(--hairline); }
+.pl-lin.atrasado:last-child { box-shadow: inset 4px 0 0 var(--danger); }
+.fila.alerta { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 55%, transparent); color: var(--danger); font-weight: 600; }
+.fila.alerta b { background: var(--danger); color: var(--on-accent); }
+.fila.alerta[aria-selected="true"] { background: var(--danger); color: var(--on-accent); box-shadow: none; }
+.fila.alerta[aria-selected="true"] b { background: var(--on-accent); color: var(--danger); }
+@media (max-width: 1100px) {
+  .at-lin { grid-template-columns: 56px minmax(0, 1fr); grid-template-areas: "d q" "d quem" "ac ac"; height: auto; row-gap: 8px; padding: 16px 0; }
+  .at-dias { grid-area: d; align-self: start; height: 56px; } .at-q { grid-area: q; } .at-quem { grid-area: quem; } .at-lin .btn { grid-area: ac; width: 100%; margin: 0; }
+}
+/* Gaveta do pedido */
+.gaveta-fundo { position: fixed; inset: 0; background: var(--overlay); z-index: 20; }
+.gaveta { position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100%); z-index: 21; background: var(--app); box-shadow: -1px 0 var(--hairline), -16px 0 32px rgb(0 0 0 / .25); display: flex; flex-direction: column; }
+.gv-cab { display: flex; align-items: flex-start; gap: 16px; padding: 24px max(24px, env(safe-area-inset-right, 0px)) 16px 24px; box-shadow: inset 0 -1px var(--hairline); }
+.gv-cab .t { flex: 1; min-width: 0; display: grid; gap: 8px; }
+.gv-cab h2 { font-size: 20px; line-height: 32px; font-weight: 600; }
+.gv-cab .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.gv-corpo { flex: 1; overflow-y: auto; padding: 24px max(24px, env(safe-area-inset-right, 0px)) 24px 24px; display: grid; gap: 24px; align-content: start; }
+.gv-sec { display: grid; gap: 16px; }
+.gv-sec h3 { font-size: 12px; line-height: 16px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 600; }
+.gv-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0; }
+.gv-dl div { display: grid; }
+.gv-dl dt { font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.gv-dl dd { margin: 0; font-size: 14px; line-height: 24px; font-variant-numeric: tabular-nums; }
+.gv-faixa { display: grid; gap: 8px; padding: 16px; border-radius: 8px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+.gv-faixa.ok { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 40%, transparent); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+.gv-faixa b { font-size: 14px; line-height: 24px; }
+.gv-faixa span { font-size: 14px; line-height: 24px; color: var(--ink-2); }
+.gv-parc { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
+.gv-parc > span { min-width: 0; }
+.gv-parc small { display: block; font-size: 12px; line-height: 16px; color: var(--ink-3); }
+.gv-form { display: grid; gap: 16px; padding: 16px; border-radius: 8px; background: var(--surface); }
+.gv-campo { display: grid; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ink-3); font-weight: 600; }
+.gv-campo input, .gv-campo select { height: 40px; border-radius: 8px; border: 1px solid var(--borda); background: var(--app); padding: 0 12px; font-size: 16px; color: var(--ink); font-weight: 400; }
+.gv-erro { font-size: 12px; line-height: 16px; color: var(--danger); }
+.gv-linha { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.gv-rod { padding: 16px max(24px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) 24px; box-shadow: inset 0 1px var(--hairline); display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.link-perigo { border: 0; background: none; padding: 0; color: var(--danger); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; height: 40px; }
+.btn-perigo { background: var(--danger); color: var(--on-accent); font-weight: 600; }
+@media (max-width: 1100px) {
+  .pl-cab { display: none; }
+  .pl-lin { grid-template-columns: 1fr auto; grid-template-areas: "cli envio" "falta falta" "ac ac"; height: auto; row-gap: 8px; padding: 16px 8px; }
+  .pl-num, .pl-carro, .pl-valor { display: none; }
+  .pl-cli { grid-area: cli; } .pl-envio { grid-area: envio; } .pl-falta { grid-area: falta; } .pl-ac, .pl-ok { grid-area: ac; justify-content: stretch; padding: 0; }
+  .pl-ac .btn { width: 100%; }
+  .linha-busca-pd .busca-pd { max-width: none; }
+}
+@media (max-width: 767px) { .pl-ac .btn, .fila, .busca-pd { height: 48px; } .gv-campo input, .gv-campo select { height: 48px; } }
+</style>
+
+<div class="casca">
+  <header class="barra-topo"><i aria-hidden="true"></i>Sistema<span class="abas-topo"><button type="button" data-tela="pedidos">Pedidos</button><button type="button" data-tela="painel">Painel</button></span></header>
+  <nav class="lateral" aria-label="Menu">
+    <div class="marca"><i aria-hidden="true"></i>Sistema</div>
+    <button class="item-nav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>Início</button>
+    <button class="item-nav" type="button" data-tela="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>Pedidos</button>
+    <button class="item-nav" type="button" data-tela="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Painel comercial</button>
+    <button class="item-nav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>Nova venda</button>
+    <button class="item-nav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/></svg>Conversas ADM</button>
+    <button class="item-nav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18v12H3zM3 11h18M16 15h2"/></svg>Financeiro</button>
+  </nav>
+  <main class="area" id="area"><div class="conteudo" id="conteudo"></div></main>
+</div>
+<div class="ctl" role="group" aria-label="Controle da demo">
+  <button type="button" id="b-atual" aria-pressed="false">Hoje</button>
+  <button type="button" id="b-prop" aria-pressed="true">Proposta</button>
+  <button type="button" id="b-grade" aria-pressed="false">Grade</button>
+  <button type="button" id="b-regras" aria-pressed="false">8 regras</button>
+</div>
+<div class="medida" id="medida" hidden></div>
+<div id="camada"></div>
+<div id="camada-pd"></div>
+<p class="vivo" id="vivo" aria-live="polite"></p>
+
+<script>
+window.APP = { tela: 'pedidos', modo: 'proposta' }; window.TELAS = {}
+</script>
+<script>
+(function () {
+  // ── Dados de exemplo (fictícios) ─────────────────────────────────────────
+  const brl = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const brl0 = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })
+  const mi = (n) => (n / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' mi'
+  const cent = (n) => Math.ceil(Math.round(n * 1000) / 10) / 100
+  const pct = (n) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(n) + '%'
+  const cap = (s) => s[0].toUpperCase() + s.slice(1)
+  const NOV = { 2: 118400, 3: 142300, 4: 151900, 5: 139700, 6: 160200, 9: 147100, 10: 160400, 11: 41890 }
+  const OUT = { 1: 131200, 2: 128900, 5: 140300, 6: 135600, 7: 142800, 8: 139100, 9: 150500, 12: 146200, 13: 151800, 14: 138900, 15: 149300, 16: 157600, 19: 141700, 20: 152400, 21: 147900, 22: 139800, 23: 161200, 26: 148300, 27: 144600, 28: 156100, 29: 150700, 30: 168400 }
+  const SET = { 1: 125400, 2: 131800, 3: 127300, 4: 138900, 5: 129600, 8: 134200, 9: 141700, 10: 136000, 11: 137400, 14: 140100, 15: 133800, 16: 145200, 17: 138600, 18: 150300, 21: 139900, 22: 142700, 23: 136400, 24: 147800, 25: 151200, 28: 144900, 29: 139300, 30: 158600 }
+  const COMP = { '2026-10': { nome: 'outubro', serie: OUT, dias: 31, semValor: 0 }, '2026-09': { nome: 'setembro', serie: SET, dias: 30, semValor: 1 } }
+  const HOJE = 11
+  const uteisNov = []; for (let d = 1; d <= 30; d++) { const w = new Date(2026, 10, d).getDay(); if (w !== 0 && w !== 6) uteisNov.push(d) }
+  const SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
+  const rotDia = (d) => `${SEM[new Date(2026, 10, d).getDay()]} ${String(d).padStart(2, '0')}/11`
+  const vendedores = [
+    { nome: 'Amanda Ribeiro', hoje: 12480, mes: 168300, meta: 320000, ped: 31, rec: [2, 9, 3, 4, 13] },
+    { nome: 'Bruno Kaminski', hoje: 0, mes: 121900, meta: 300000, ped: 22, rec: [2, 6, 2, 3, 9] },
+    { nome: 'Carla Menegat', hoje: 15990, mes: 156700, meta: 320000, ped: 29, rec: [1, 8, 4, 2, 14] },
+    { nome: 'Diego Fontana', hoje: 4890, mes: 98200, meta: 280000, ped: 18, rec: [2, 5, 1, 2, 8] },
+    { nome: 'Elisa Moraes', hoje: 8530, mes: 142600, meta: 300000, ped: 26, rec: [1, 7, 3, 3, 12] },
+    { nome: 'Fábio Antunes', hoje: 0, mes: 87400, meta: 280000, ped: 16, rec: [2, 4, 2, 1, 7] },
+    { nome: 'Gabriela Souza', hoje: 0, mes: 171290, meta: 320000, ped: 33, rec: [1, 10, 2, 5, 15] },
+    { nome: 'Heitor Lazzari', hoje: 0, mes: 115500, meta: 280000, ped: 21, rec: [2, 6, 1, 2, 10] },
+  ]
+  // rec = [sem recebimento, sinal, parcial, produto pago e frete aberto, quitado]
+  const REC = ['Sem recebimento', 'Sinal', 'Parcial', 'Produto pago, frete aberto', 'Quitado']
+  const cobrancas = [
+    { num: '26100288', cliente: 'Oficina Rota Sul', det: 'Pronto para expedição há 6 dias', vend: 'Bruno' },
+    { num: '26100301', cliente: 'Marcelo Duarte', det: 'Pronto para expedição há 4 dias', vend: 'Fábio' },
+    { num: '26100309', cliente: 'Agropecuária Três Marcos', det: 'Parcela venceu em 07/11', vend: 'Heitor' },
+  ]
+  const st = { dia: HOJE, comp: '2026-10', meta: 2400000, soAbaixo: false, ordem: { col: 'faltaHoje', dir: -1 }, cobrados: new Set(), como: false, dlg: null, metaRasc: '' }
+
+  // ── Cálculo (mesma regra do sistema: metaDiariaComercial) ────────────────
+  function calc(dia = st.dia, meta = st.meta) {
+    const antes = Object.entries(NOV).filter(([d]) => +d < dia).reduce((s, [, v]) => s + v, 0)
+    const feito = NOV[dia] ?? 0
+    const dias = uteisNov.filter((d) => d >= dia).length
+    const equipe = Math.max(0, cent((meta - antes) / dias))
+    const porVend = cent(equipe / vendedores.length)
+    const vendido = antes + feito
+    const faltaMes = Math.max(0, meta - vendido)
+    const ritmo = cent(faltaMes / Math.max(1, dias - 1))
+    const c = COMP[st.comp]
+    const ateC = Math.min(dia, c.dias)
+    const totalC = Object.entries(c.serie).filter(([d]) => +d <= ateC).reduce((s, [, v]) => s + v, 0)
+    const feitoC = c.serie[ateC] ?? null
+    // Vendedor num dia anterior: a venda do dia repartida pelo peso do mês (em 11/11, o número real).
+    const escala = vendido / 1061890
+    const pesoTot = vendedores.reduce((s, v) => s + v.mes, 0)
+    const vs = vendedores.map((v, i) => {
+      const hoje = dia === HOJE ? v.hoje : Math.round(feito * (v.mes / pesoTot) / 10) * 10
+      const mes = Math.round(v.mes * escala)
+      return { ...v, i, hoje, mes, quit: v.rec[4], faltaHoje: Math.max(0, porVend - hoje), faltaMes: Math.max(0, v.meta - mes) }
+    })
+    return { antes, feito, dias, equipe, porVend, vendido, faltaMes, ritmo, totalC, feitoC, ateC, c, vs, faltaHoje: Math.max(0, equipe - feito) }
+  }
+
+  const el = document.getElementById('conteudo')
+  const camada = document.getElementById('camada')
+  const RG = (n) => `<span class="regra" aria-hidden="true">${n}</span>`
+  const SV = { esq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>', dir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>' }
+
+  function render() {
+    el.innerHTML = APP.modo === 'atual' ? telaAtual() : telaProposta()
+    if (APP.modo === 'proposta') desenharGrafico()
+    renderCamada()
+  }
+
+  // ═══════════════ TELA DE HOJE ═══════════════
+  function telaAtual() {
+    const r = calc()
+    const d2 = String(st.dia).padStart(2, '0')
+    const delta = r.vendido - r.totalC
+    const ic = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>'
+    return `<div class="atual">
+      <div class="cabt" data-m><span class="ic">${ic}</span><div><h1>Painel comercial</h1><p>Meta diária da equipe e de cada vendedora, realizado e comparação entre meses.</p></div></div>
+      <div class="navm" data-m><button class="btn btn-sec" type="button">← Mês anterior</button><strong>11/2026</strong><button class="btn btn-sec" type="button">Próximo mês →</button><button class="btn btn-sec" type="button">Gerenciar vendedores</button></div>
+      <form class="caixa form" id="f-atual" data-m><label>Ver até o dia<input type="date" id="a-dia" min="2026-11-01" max="2026-11-11" value="2026-11-${d2}"></label><label>Comparar com o mês<input type="month" id="a-comp" max="2026-10" value="${st.comp}"></label><button type="submit" class="btn btn-acento" style="height:44px">Aplicar</button></form>
+      <section class="k3" data-m>${[['Vendido até o dia', r.vendido], ['Meta mensal', st.meta], ['Falta para a meta mensal', r.faltaMes]].map(([t, v]) => `<div class="caixa"><p>${t}</p><p class="v num">${brl(v)}</p></div>`).join('')}</section>
+      <section class="caixa" data-m><h2>Meta diária · ${d2}/11</h2><p class="exp">Meta mensal definida menos ${brl(r.antes)} já vendidos antes deste dia; saldo dividido pelos ${r.dias} dias de segunda a sexta restantes. A meta do dia é dividida igualmente entre ${vendedores.length} vendedores ativos.</p>
+        <div class="t4">${[['Equipe por dia', r.equipe], ['Já fizemos no dia', r.feito], ['Falta para a meta do dia', r.faltaHoje], ['Meta igual por vendedor', r.porVend]].map(([t, v]) => `<div><p>${t}</p><strong class="num">${brl(v)}</strong></div>`).join('')}</div></section>
+      <section class="caixa" data-m><h2>Comparação com outro mês</h2><p class="txt">Valor registrado até ${d2}/11: <strong>${brl(r.vendido)}</strong>. Até ${String(r.ateC).padStart(2, '0')}/${st.comp.slice(5)}: <strong>${brl(r.totalC)}</strong>.</p>
+        ${r.c.semValor ? `<p class="txt" style="color:var(--danger)">Há 0 pedido(s) sem valor no mês escolhido e ${r.c.semValor} no comparado. Complete esses valores antes de concluir a diferença.</p>` : `<p class="txt">${delta >= 0 ? 'Acima' : 'Abaixo'} do mês comparado em <strong>${brl(Math.abs(delta))}</strong> (${pct(Math.abs(delta / r.totalC * 100))}).</p>`}</section>
+      <section class="caixa" data-m><p class="txt" style="margin:0 0 8px">Meta sugerida: ${brl(2400000)} (soma das metas dos ${vendedores.length} vendedores ativos).</p>
+        <form class="form" id="f-meta-atual"><label>Meta da equipe neste mês (R$)<input class="camp num" id="a-meta" inputmode="numeric" value="${st.meta.toLocaleString('pt-BR')}"></label><button type="submit" class="btn btn-prim" style="height:44px">Salvar meta</button></form></section>
+      <section class="caixa" data-m><h2 style="margin-bottom:12px">Por vendedor ativo</h2><div class="rolar"><table><thead><tr><th>Vendedor</th><th>Feito no dia</th><th>Meta diária igual</th><th>Falta no dia</th><th>Vendido no mês</th><th>Meta mensal individual</th><th>Falta no mês</th></tr></thead>
+        <tbody>${r.vs.map((v) => `<tr><th style="font-weight:500">${v.nome.split(' ')[0]}</th><td class="num">${brl(v.hoje)}</td><td class="num">${brl(r.porVend)}</td><td class="num">${brl(v.faltaHoje)}</td><td class="num">${brl(v.mes)}</td><td class="num">${brl(v.meta)}</td><td class="num">${brl(v.faltaMes)}</td></tr>`).join('')}</tbody></table></div></section>
+      <section class="k8" data-m>${[['Pedidos', '196', '+21 vs. comparação'], ['Valor vendido', brl0(r.vendido), 'Valor em 196/196 pedidos'], ['Ticket médio', brl0(r.vendido / 196), 'Pedidos com valor registrado'], ['Pagamentos mistos', '14', 'Pedidos com mais de uma forma estruturada'], ['Sinal recebido', '55', 'Pedidos com entrada recebida e saldo ainda aberto'], ['Pedido quitado', '88', 'Amortecedor e frete em dia'], ['Frete pendente', '22', 'Amortecedor pago; frete ainda aberto'], ['Inadimplentes', '3', 'Prontos para expedição sem quitação']].map(([t, v, d]) => `<div><p>${t}</p><strong class="num">${v}</strong><p>${d}</p></div>`).join('')}</section>
+      <section class="caixa" data-m style="border-radius:16px"><h2 style="font-size:14px">Vendas por vendedor e recebimento</h2><p class="exp" style="font-size:13px">01/11 a ${d2}/11 · vendedor atribuído ao pedido · cada pedido aparece em uma situação</p><div class="rolar" style="margin-top:12px"><table style="min-width:740px"><thead><tr><th>Vendedor</th><th style="text-align:right">Total</th><th style="text-align:right">Sinal</th><th style="text-align:right">Parcial</th><th style="text-align:right">Produto pago, frete aberto</th><th style="text-align:right">Pedido quitado</th><th style="text-align:right">Sem recebimento</th></tr></thead>
+        <tbody>${vendedores.map((v) => `<tr><th style="font-weight:500">${v.nome.split(' ')[0]}</th><td class="num" style="text-align:right">${v.ped}</td><td class="num" style="text-align:right">${v.rec[1]}</td><td class="num" style="text-align:right">${v.rec[2]}</td><td class="num" style="text-align:right">${v.rec[3]}</td><td class="num" style="text-align:right">${v.rec[4]}</td><td class="num" style="text-align:right">${v.rec[0]}</td></tr>`).join('')}</tbody></table></div>
+        <p class="exp" style="font-size:13px;margin-top:8px">Sinal: entrada paga no pedido com saldo aberto. Parcial: pagamento recebido sem quitação. Pedido quitado: produto e frete em dia.</p></section>
+    </div>`
+  }
+
+  // ═══════════════ PROPOSTA ═══════════════
+  function telaProposta() {
+    const r = calc()
+    const prog = r.equipe ? Math.min(100, r.feito / r.equipe * 100) : 100
+    const delta = r.vendido - r.totalC
+    const bloq = r.c.semValor > 0
+    const uteis = uteisNov.filter((d) => d <= HOJE)
+    const iDia = uteis.indexOf(st.dia)
+    let lista = [...r.vs]
+    if (st.soAbaixo) lista = lista.filter((v) => v.faltaHoje > 0)
+    const { col, dir } = st.ordem
+    lista.sort((a, b) => (col === 'nome' ? a.nome.localeCompare(b.nome) : a[col] - b[col]) * dir)
+    const sortAttr = (c) => st.ordem.col === c ? `aria-sort="${st.ordem.dir > 0 ? 'ascending' : 'descending'}"` : ''
+    const cobrar = cobrancas.map((c, i) => `<div class="cob ${st.cobrados.has(i) ? 'feito' : ''}" data-m><div class="t"><b>${c.num} · ${c.cliente}</b><span>${c.det} · ${c.vend}</span></div>${st.cobrados.has(i) ? '<span class="pill ok">Cobrado</span>' : `<button type="button" class="btn btn-sec btn-p" data-cobrar="${i}">Marcar cobrado</button>`}</div>`).join('')
+    const abertos = cobrancas.length - st.cobrados.size
+
+    return `<div class="prop">
+      <header class="p-cab" data-m>
+        <div><h1>Painel comercial</h1><p class="sub">Novembro de 2026 · ${vendedores.length} vendedores ativos · meta do dia dividida igualmente</p></div>
+        <div class="dir rel"><span class="atualizado num">Atualizado às 15:42</span><button type="button" class="btn btn-sec" id="ver-atalhos" title="Atalhos do teclado (?)">Atalhos</button>${RG('2')}</div>
+      </header>
+
+      <div class="controles rel" data-m>
+        <div class="grupo"><span>Até o dia</span>
+          <div class="passo"><button type="button" id="dia-ant" aria-label="Dia útil anterior" title="Dia útil anterior (←)" ${iDia <= 0 ? 'disabled' : ''}>${SV.esq}</button><span class="rotulo">${rotDia(st.dia)}</span><button type="button" id="dia-prox" aria-label="Próximo dia útil" title="Próximo dia útil (→)" ${st.dia >= HOJE ? 'disabled' : ''}>${SV.dir}</button></div>
+          ${st.dia !== HOJE ? '<button type="button" class="btn btn-sec" id="dia-hoje" title="Voltar para hoje (H)">Hoje</button>' : ''}
+        </div>
+        <div class="grupo"><span>Comparar com</span><select class="sel" id="comp" aria-label="Comparar com o mês">${Object.entries(COMP).map(([k, c]) => `<option value="${k}" ${k === st.comp ? 'selected' : ''}>${cap(c.nome)} de 2026</option>`).join('')}</select></div>
+        ${RG('5·7')}
+      </div>
+
+      <section class="cartao" data-m aria-label="Meta do dia">
+        ${RG('3·8')}
+        <div class="dia-topo"><span class="rot">Meta do dia · ${rotDia(st.dia)}</span><button type="button" class="link" id="como" aria-expanded="${st.como}">${st.como ? 'Fechar explicação' : 'Como calculamos'}</button></div>
+        <div class="dia-num"><strong class="num">${brl(r.feito)}</strong><span class="num">de ${brl(r.equipe)}</span><span class="pill ${prog >= 100 ? 'ok' : ''}">${prog >= 100 ? 'Meta do dia batida' : pct(prog) + ' da meta do dia'}</span></div>
+        <div class="trilho ${prog >= 100 ? 'ok' : ''}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(prog)}" aria-label="Progresso da meta do dia"><i style="width:${prog}%"></i></div>
+        <div class="stats">
+          <div class="stat"><span>Falta hoje</span><b>${brl(r.faltaHoje)}</b></div>
+          <div class="stat"><span>Meta igual por vendedor</span><b>${brl(r.porVend)}</b></div>
+          <div class="stat"><span>Dias úteis restantes, com hoje</span><b>${r.dias}</b></div>
+          <div class="stat"><span>Mesmo dia em ${r.c.nome}</span><b>${r.feitoC == null ? SEM[new Date(2026, +st.comp.slice(5) - 1, r.ateC).getDay()] + ' · sem venda' : brl(r.feitoC)}</b></div>
+        </div>
+        ${st.como ? `<p class="como">Meta do mês (${brl(st.meta)}) menos o que já foi vendido antes deste dia (${brl(r.antes)}), dividido pelos ${r.dias} dias de segunda a sexta que faltam, contando este. A meta do dia é repartida igualmente entre os ${vendedores.length} vendedores ativos. Feriados ainda não são descontados.</p>` : ''}
+      </section>
+
+      <section class="kpis rel" data-m>
+        ${RG('1·8')}
+        <div class="cartao kpi"><span class="rot">Vendido no mês</span><span class="v">${brl(r.vendido)}</span><span class="pe">${bloq ? '<span class="pill ate">Comparação suspensa</span><small>pedido sem valor</small>' : `<span class="pill ${delta >= 0 ? 'ok' : 'atr'}">${delta >= 0 ? '+' : '−'}${pct(Math.abs(delta / r.totalC * 100))}</span><small>vs. ${r.c.nome} até o dia ${r.ateC}</small>`}</span></div>
+        <div class="cartao kpi"><span class="rot">Meta do mês</span><span class="v">${brl(st.meta)}</span><span class="pe"><button type="button" class="btn btn-sec btn-p" id="editar-meta" title="Editar meta (E)">Editar meta</button><small>sugerida ${brl0(2400000)}</small></span>${RG('4·5·6')}</div>
+        <div class="cartao kpi"><span class="rot">Falta no mês</span><span class="v">${brl(r.faltaMes)}</span><span class="pe"><span class="pill">${pct(Math.min(100, r.vendido / st.meta * 100))} feito</span></span></div>
+        <div class="cartao kpi"><span class="rot">Ritmo necessário</span><span class="v">${brl(r.ritmo)}</span><span class="pe"><small>por dia útil depois de ${String(st.dia).padStart(2, '0')}/11</small></span></div>
+      </section>
+
+      <div class="linha2">
+        <section class="cartao" data-m aria-label="Acumulado do mês">
+          ${RG('8')}
+          <div class="c-topo"><h2>Acumulado do mês</h2><div class="legenda"><span><i></i>Novembro</span><span><i class="cmp"></i>${cap(r.c.nome)}</span><span><i class="prj"></i>Ritmo para a meta</span></div></div>
+          <p class="c-sub">${bloq ? `${cap(r.c.nome)} tem ${r.c.semValor} pedido sem valor até o dia ${r.ateC}: a linha aparece, a diferença não.` : `Até ${String(st.dia).padStart(2, '0')}/11: ${brl0(r.vendido)} · até ${String(r.ateC).padStart(2, '0')}/${st.comp.slice(5)}: ${brl0(r.totalC)}`}</p>
+          <div class="graf" id="graf"></div>
+        </section>
+        <section class="cartao" data-m aria-label="Cobrar">
+          ${RG('6')}
+          <div class="c-topo"><h2>Cobrar hoje</h2><span class="pill ${abertos ? 'atr' : 'ok'} num">${abertos ? `${abertos} em aberto` : 'Tudo cobrado'}</span></div>
+          <p class="c-sub">Pedidos prontos ou com parcela vencida, sem quitação</p>
+          <div class="cobrar">${cobrar}</div>
+        </section>
+      </div>
+
+      <section class="cartao" data-m aria-label="Vendedores">
+        ${RG('1·7·8')}
+        <div class="t-topo"><h2>Vendedores</h2>
+          <div class="legenda">${[4, 3, 2, 1, 0].map((k) => `<span><i class="sq c${k + 1}"></i>${REC[k]}</span>`).join('')}</div>
+          <button type="button" class="chave" id="so-abaixo" aria-pressed="${st.soAbaixo}" title="Atalho: F">Só quem não bateu o dia</button>
+        </div>
+        <div class="tab" role="table">
+          <div class="tab-cab" role="row"><button type="button" data-ord="nome" ${sortAttr('nome')}>Vendedor</button><button type="button" data-ord="hoje" ${sortAttr('hoje')}>Hoje · feito / meta</button><button type="button" data-ord="faltaHoje" ${sortAttr('faltaHoje')}>Falta hoje</button><button type="button" data-ord="mes" ${sortAttr('mes')}>Mês · vendido / meta</button><button type="button" class="dirr" data-ord="ped" ${sortAttr('ped')}>Pedidos</button><button type="button" data-ord="quit" ${sortAttr('quit')}>Recebimento</button></div>
+          ${lista.length ? lista.map((v) => {
+            const pHoje = r.porVend ? Math.min(100, v.hoje / r.porVend * 100) : 100
+            const pMes = Math.min(100, v.mes / v.meta * 100)
+            return `<div class="tab-lin" role="row">
+              <span class="nome">${v.nome}</span>
+              <div class="par-v"><span class="vals"><span><span class="so-cel">Hoje </span>${brl0(v.hoje)}</span><small>${brl0(r.porVend)}</small></span><span class="mini ${pHoje >= 100 ? 'ok' : ''}"><i style="width:${pHoje}%"></i></span></div>
+              <span class="falta ${v.faltaHoje === 0 ? 'zero' : ''}"><span class="so-cel">Falta hoje </span>${v.faltaHoje === 0 ? 'Bateu o dia' : brl0(v.faltaHoje)}</span>
+              <div class="par-v"><span class="vals"><span><span class="so-cel">Mês </span>${brl0(v.mes)}</span><small>${brl0(v.meta)}</small></span><span class="mini"><i style="width:${pMes}%"></i></span></div>
+              <span class="dirr num"><span class="so-cel">Pedidos </span>${v.ped}</span>
+              <div class="rec" title="${[4, 3, 2, 1, 0].map((k) => `${REC[k]}: ${v.rec[k]}`).join(' · ')}"><span class="seg">${[4, 3, 2, 1, 0].map((k) => v.rec[k] ? `<i class="c${k + 1}" style="flex:${v.rec[k]}"></i>` : '').join('')}</span><small class="num">${v.rec[4]} quitados · ${v.rec[1] + v.rec[2] + v.rec[3]} em aberto · ${v.rec[0]} sem receber</small></div>
+            </div>`
+          }).join('') : '<p style="padding:16px 0;color:var(--ink-3)">Todo mundo bateu a meta do dia.</p>'}
+        </div>
+      </section>
+    </div>`
+  }
+
+  // Gráfico: acumulado por dia, novembro × mês comparado + ritmo até a meta.
+  function desenharGrafico() {
+    const box = document.getElementById('graf'); if (!box) return
+    const W = box.clientWidth, H = 240, ml = 56, mr = W < 480 ? 56 : 88, mt = 8, mb = 24
+    const r = calc()
+    const acum = (serie, ate) => { let s = 0; const pts = []; for (let d = 1; d <= ate; d++) { s += serie[d] ?? 0; pts.push([d, s]) } return pts }
+    const nov = acum(NOV, st.dia), cmp = acum(r.c.serie, r.c.dias)
+    const ymax = 3200000
+    const x = (d) => ml + (d - 1) / 30 * (W - ml - mr) // eixo de 31 dias; novembro termina no 30
+    const y = (v) => mt + (1 - Math.min(v, ymax) / ymax) * (H - mt - mb)
+    const path = (pts) => pts.map(([d, v], i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)},${y(v).toFixed(1)}`).join('')
+    const fimN = nov[nov.length - 1], fimC = cmp[cmp.length - 1]
+    const grid = [0, 1000000, 2000000, 3000000].map((v) => `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--hairline)" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" text-anchor="end">${v ? v / 1e6 + ' mi' : '0'}</text>`).join('')
+    const xt = [1, 8, 15, 22, 30].map((d) => `<text x="${x(d)}" y="${H - 4}" text-anchor="middle">${String(d).padStart(2, '0')}</text>`).join('')
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Acumulado de novembro até o dia ${st.dia}: ${brl0(fimN[1])}. ${cap(r.c.nome)} fechou em ${brl0(fimC[1])}. Meta ${brl0(st.meta)}.">
+      ${grid}${xt}
+      <line x1="${x(fimN[0])}" x2="${x(30)}" y1="${y(fimN[1])}" y2="${y(st.meta)}" stroke="var(--serie)" stroke-width="2" stroke-dasharray="4 4"/>
+      <path d="${path(cmp)}" fill="none" stroke="var(--comparada)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="${path(nov)}" fill="none" stroke="var(--serie)" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="${x(30)}" cy="${y(st.meta)}" r="4" fill="var(--serie)" stroke="var(--surface)" stroke-width="2"/>
+      <circle cx="${x(fimN[0])}" cy="${y(fimN[1])}" r="5" fill="var(--serie)" stroke="var(--surface)" stroke-width="2"/>
+      <text x="${x(30) + 8}" y="${y(st.meta) + 4}" class="rotfim">Meta ${mi(st.meta)}</text>
+      <text x="${x(r.c.dias) + 8}" y="${y(fimC[1]) + 4}">${cap(r.c.nome.slice(0, 3))} ${mi(fimC[1])}</text>
+      <line id="mira" y1="${mt}" y2="${H - mb}" stroke="var(--ink-3)" stroke-width="1" visibility="hidden"/>
+      <rect x="${ml}" y="${mt}" width="${Math.max(0, W - ml - mr)}" height="${H - mt - mb}" fill="transparent" id="alvo-graf"/>
+    </svg><div class="dica" id="dica" hidden></div>`
+    const alvo = box.querySelector('#alvo-graf'), mira = box.querySelector('#mira'), dica = box.querySelector('#dica')
+    alvo.addEventListener('mousemove', (e) => {
+      const rr = box.getBoundingClientRect()
+      const d = Math.max(1, Math.min(30, Math.round((e.clientX - rr.left - ml) / (W - ml - mr) * 30 + 1)))
+      mira.setAttribute('x1', x(d)); mira.setAttribute('x2', x(d)); mira.setAttribute('visibility', 'visible')
+      const vn = nov[d - 1]?.[1], vc = cmp[d - 1]?.[1]
+      dica.innerHTML = `<b>Dia ${String(d).padStart(2, '0')}</b>Novembro: ${vn == null ? '—' : brl0(vn)}<br>${cap(r.c.nome)}: ${vc == null ? '—' : brl0(vc)}`
+      dica.hidden = false; dica.style.left = Math.min(Math.max(x(d), 72), W - 72) + 'px'; dica.style.top = Math.max(48, y(Math.max(vn ?? 0, vc ?? 0)) - 8) + 'px'
+    })
+    alvo.addEventListener('mouseleave', () => { mira.setAttribute('visibility', 'hidden'); dica.hidden = true })
+  }
+
+  // ── Diálogos ────────────────────────────────────────────────────────────
+  const parseReais = (s) => Number(String(s).replace(/\D/g, '')) || 0
+  function renderCamada() {
+    let h = ''
+    if (st.dlg === 'meta') {
+      const novo = parseReais(st.metaRasc)
+      const a = calc(st.dia, st.meta), b = calc(st.dia, novo)
+      const abaixo = novo > 0 && novo < a.vendido
+      h = `<div class="fundo" id="fundo"><form class="dlg" id="f-meta" role="dialog" aria-modal="true" aria-labelledby="t-meta">
+        <h2 id="t-meta">Meta de novembro</h2>
+        <label class="campo">Meta da equipe (R$)<input id="i-meta" inputmode="numeric" autocomplete="off" value="${novo ? novo.toLocaleString('pt-BR') : ''}"></label>
+        <div class="previa num" aria-live="polite">
+          <div><span>Meta do dia</span><b>${brl(a.equipe)}<span class="seta">→</span>${brl(b.equipe)}</b></div>
+          <div><span>Por vendedor</span><b>${brl(a.porVend)}<span class="seta">→</span>${brl(b.porVend)}</b></div>
+          <div><span>Falta no mês</span><b>${brl(a.faltaMes)}<span class="seta">→</span>${brl(b.faltaMes)}</b></div>
+        </div>
+        ${abaixo ? `<p class="alerta">Essa meta é menor que o já vendido (${brl(a.vendido)}). A meta do dia fica zerada até o fim do mês.</p>` : ''}
+        <div class="rod"><button type="button" class="btn btn-sec" id="cancelar">Cancelar</button><button type="submit" class="btn btn-prim" ${!novo || novo === st.meta ? 'disabled' : ''}>Salvar meta</button></div>
+      </form></div>`
+    } else if (st.dlg === 'atalhos') {
+      h = `<div class="fundo" id="fundo"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="t-at"><h2 id="t-at">Atalhos</h2><div class="atalhos">
+        <div><span>Dia útil anterior / próximo</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+        <div><span>Voltar para hoje</span><kbd>H</kbd></div><div><span>Editar a meta do mês</span><kbd>E</kbd></div>
+        <div><span>Só quem não bateu o dia</span><kbd>F</kbd></div><div><span>Esta lista</span><kbd>?</kbd></div></div>
+        <div class="rod"><button type="button" class="btn btn-prim" id="cancelar">Fechar</button></div></div></div>`
+    }
+    camada.innerHTML = h
+  }
+
+  let tId
+  function toast(msg, desfazer) {
+    document.querySelector('.toast')?.remove()
+    const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status')
+    t.innerHTML = `<span>${msg}</span>${desfazer ? '<button type="button" class="desfazer">Desfazer</button>' : ''}`
+    document.body.appendChild(t)
+    if (desfazer) t.querySelector('.desfazer').onclick = () => { t.remove(); desfazer() }
+    clearTimeout(tId); tId = setTimeout(() => t.remove(), 6000)
+  }
+  const anunciar = (m) => { document.getElementById('vivo').textContent = m }
+
+  function irDia(d) { st.dia = d; render(); anunciar(`Mostrando até ${rotDia(d)}, comparado com ${COMP[st.comp].nome}.`) }
+  function passoDia(n) {
+    const uteis = uteisNov.filter((d) => d <= HOJE)
+    const i = uteis.indexOf(st.dia) + n
+    if (i >= 0 && i < uteis.length) irDia(uteis[i])
+  }
+  function abrirMeta() { st.dlg = 'meta'; st.metaRasc = String(st.meta); renderCamada(); const i = document.getElementById('i-meta'); i.focus(); i.select() }
+
+  document.addEventListener('click', (e) => {
+    if (APP.tela !== 'painel') return
+    const t = e.target.closest('button, .fundo'); if (!t) return
+    const d = t.dataset
+    if (d.ord) { st.ordem = { col: d.ord, dir: st.ordem.col === d.ord ? -st.ordem.dir : (d.ord === 'nome' ? 1 : -1) }; render(); return }
+    if (d.cobrar) {
+      const i = +d.cobrar; st.cobrados.add(i); render()
+      toast(`Pedido ${cobrancas[i].num} marcado como cobrado.`, () => { st.cobrados.delete(i); render() }); return
+    }
+    switch (t.id) {
+      case 'dia-ant': passoDia(-1); return
+      case 'dia-prox': passoDia(1); return
+      case 'dia-hoje': irDia(HOJE); return
+      case 'como': st.como = !st.como; render(); return
+      case 'so-abaixo': st.soAbaixo = !st.soAbaixo; render(); return
+      case 'editar-meta': abrirMeta(); return
+      case 'ver-atalhos': st.dlg = 'atalhos'; renderCamada(); return
+      case 'cancelar': st.dlg = null; renderCamada(); return
+      case 'fundo': if (e.target.id === 'fundo') { st.dlg = null; renderCamada() } return
+    }
+  })
+  document.addEventListener('change', (e) => {
+    if (APP.tela !== 'painel') return
+    if (e.target.id === 'comp') { st.comp = e.target.value; render(); anunciar(`Comparando com ${COMP[st.comp].nome}.`) }
+  })
+  document.addEventListener('input', (e) => {
+    if (APP.tela !== 'painel') return
+    if (e.target.id !== 'i-meta') return
+    st.metaRasc = e.target.value; renderCamada()
+    const i = document.getElementById('i-meta'); i.focus(); i.setSelectionRange(i.value.length, i.value.length)
+  })
+  document.addEventListener('submit', (e) => {
+    if (APP.tela !== 'painel') return
+    e.preventDefault()
+    if (e.target.id === 'f-meta') {
+      const antes = st.meta, novo = parseReais(st.metaRasc)
+      if (!novo || novo === antes) return
+      st.meta = novo; st.dlg = null; render()
+      toast(`Meta de novembro salva: ${brl0(novo)}. Meta do dia agora: ${brl(calc().equipe)}.`, () => { st.meta = antes; render(); toast(`Meta voltou para ${brl0(antes)}.`) })
+    } else if (e.target.id === 'f-atual') {
+      const dv = +document.getElementById('a-dia').value.slice(8, 10)
+      const cv = document.getElementById('a-comp').value
+      if (dv) st.dia = Math.min(HOJE, dv)
+      if (COMP[cv]) st.comp = cv
+      render()
+    } else if (e.target.id === 'f-meta-atual') {
+      const v = parseReais(document.getElementById('a-meta').value); if (v) { st.meta = v; render(); toast('Meta do mês salva.') }
+    }
+  })
+  document.addEventListener('keydown', (e) => {
+    if (APP.tela !== 'painel') return
+    if (e.key === 'Escape' && st.dlg) { st.dlg = null; renderCamada(); return }
+    if (APP.modo !== 'proposta' || st.dlg || /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName)) return
+    if (e.key === 'ArrowLeft') passoDia(-1)
+    else if (e.key === 'ArrowRight') passoDia(1)
+    else if (e.key.toLowerCase() === 'h') irDia(HOJE)
+    else if (e.key.toLowerCase() === 'e') { e.preventDefault(); abrirMeta() }
+    else if (e.key.toLowerCase() === 'f') { st.soAbaixo = !st.soAbaixo; render() }
+    else if (e.key === '?') { st.dlg = 'atalhos'; renderCamada() }
+  })
+  addEventListener('resize', () => { if (APP.tela === 'painel' && APP.modo === 'proposta') desenharGrafico() })
+
+  // ── Controle do apresentador ────────────────────────────────────────────
+  const painelRegras = `<aside class="painel-regras" id="painel-regras" aria-label="As 8 regras de ouro nesta tela"><h2>As 8 regras de ouro nesta tela</h2><ol>
+    <li><span class="n">1</span><div><b>Consistência</b><span>Um só tipo de cartão, um só jeito de mostrar dinheiro e uma só tabela de vendedores. Hoje são três estilos de cartão e duas tabelas.</span></div></li>
+    <li><span class="n">2</span><div><b>Atalhos e uso por todos</b><span>← → trocam o dia, H volta pra hoje, E edita a meta, F filtra. No celular os botões têm 48 px.</span></div></li>
+    <li><span class="n">3</span><div><b>Retorno claro</b><span>A barra mostra quanto da meta do dia já foi feito; trocar dia ou mês avisa o que está na tela.</span></div></li>
+    <li><span class="n">4</span><div><b>Diálogo que termina</b><span>Editar meta: valor, prévia do efeito, salvar e a confirmação com o número novo.</span></div></li>
+    <li><span class="n">5</span><div><b>Evitar erro</b><span>Não dá pra escolher dia futuro nem fim de semana; mês com pedido sem valor não tira conclusão; meta abaixo do vendido avisa antes.</span></div></li>
+    <li><span class="n">6</span><div><b>Desfazer fácil</b><span>Salvar meta e marcar cobrado têm Desfazer.</span></div></li>
+    <li><span class="n">7</span><div><b>Quem manda é a pessoa</b><span>Nada muda sozinho. Ordenar e filtrar os vendedores é escolha dela.</span></div></li>
+    <li><span class="n">8</span><div><b>Menos coisa pra lembrar</b><span>A comparação aparece no gráfico e no próprio cartão; hoje e o mês ficam na mesma linha do vendedor; a conta fica a um clique.</span></div></li>
+  </ol></aside>`
+  TELAS.painel = { render, regras: painelRegras, fechar: () => { st.dlg = null; renderCamada() } }
+})()
+</script>
+<script>
+(function () {
+  // ── Pedidos: dados de exemplo (fictícios) ────────────────────────────────
+  const brl = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+  const HOJE = new Date('2026-11-11T12:00:00')
+  const dBR = (s) => s ? new Date(s + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '—'
+  const dias = (s) => Math.round((HOJE - new Date(s + 'T12:00:00')) / 864e5)
+  const ROTULO = { receber: 'Receber pagamento', fazer_ficha: 'Criar parte técnica', definir_frete: 'Definir frete', informar_prazo: 'Informar prazo', conferir_enviar: 'Conferir e enviar', engenharia: 'Ver com a engenharia', alteracao: 'Ver alteração', acompanhar: 'Ver pedido' }
+  const FILA_DE = { receber: 'receber', fazer_ficha: 'tecnica', conferir_enviar: 'tecnica', definir_frete: 'frete', informar_prazo: 'prazo', engenharia: 'engenharia', alteracao: 'alteracao', acompanhar: 'andamento' }
+  const FILAS = [['todos', 'Todos'], ['atrasados', 'Atrasados'], ['receber', 'Receber'], ['tecnica', 'Parte técnica'], ['frete', 'Frete'], ['prazo', 'Prazo'], ['engenharia', 'Com a engenharia'], ['alteracao', 'Alterações'], ['andamento', 'Sem pendência']]
+  const TRAVA = new Set(['receber', 'tecnica'])
+  const base = [
+    { id: 1, num: '26100318', cliente: 'Marcos Aurélio Pinheiro', vend: 'Amanda', venda: '2026-11-03', carro: 'Hilux 2022 · 2" · Preto', envio: '2026-11-07', valor: 5890, acao: 'receber', falta: ['Receber R$ 2.945,00 antes do envio'], fase: 'Embalagem final', msgs: 0, parcelas: [{ v: 2945, pago: true, rot: 'Entrada · PIX' }, { v: 2945, pago: false, rot: 'Saldo · antes do envio' }] },
+    { id: 2, num: '26100322', cliente: 'Oficina Serra Azul', vend: 'Bruno', venda: '2026-11-04', carro: 'S10 2020 · 3" · Vermelho', envio: '2026-11-12', valor: 4380, acao: 'fazer_ficha', falta: ['Criar parte técnica'], fase: 'Parte técnica', msgs: 0, parcelas: [{ v: 4380, pago: true, rot: 'À vista · PIX' }] },
+    { id: 3, num: '26100327', cliente: 'Juliana Prates', vend: 'Carla', venda: '2026-11-04', carro: 'Ranger 2023 · 2" · Azul', envio: '2026-11-18', valor: 6120, acao: 'definir_frete', falta: ['Definir frete', 'Responder 1 mensagem'], fase: 'Montagem', msgs: 1, parcelas: [{ v: 6120, pago: true, rot: 'À vista · cartão' }] },
+    { id: 4, num: '26100331', cliente: 'Rogério Tavares', vend: 'Amanda', venda: '2026-10-29', carro: 'Amarok V6 2021 · 1,5" · Preto', envio: '2026-11-10', valor: 7240, acao: 'receber', falta: ['Receber R$ 3.620,00 antes do envio'], fase: 'Cotando frete', msgs: 2, parcelas: [{ v: 3620, pago: true, rot: 'Entrada · PIX' }, { v: 3620, pago: false, rot: 'Saldo · antes do envio' }] },
+    { id: 5, num: '26100334', cliente: 'Transportes Vale do Iguaçu', vend: 'Elisa', venda: '2026-11-05', carro: 'F-250 2019 · 4" · Inox', envio: '2026-11-21', valor: 9860, acao: 'acompanhar', falta: [], fase: 'Usinagem', msgs: 0, parcelas: [{ v: 9860, pago: true, rot: 'Boleto · contrato' }] },
+    { id: 6, num: '26100340', cliente: 'Paulo Henrique Lemos', vend: 'Gabriela', venda: '2026-11-06', carro: 'Frontier 2024 · 2" · Preto', envio: null, valor: 5390, acao: 'informar_prazo', falta: ['Informar prazo de envio'], fase: 'Montagem', msgs: 0, parcelas: [{ v: 5390, pago: true, rot: 'À vista · PIX' }] },
+    { id: 7, num: '26100343', cliente: 'Ana Cláudia Furtado', vend: 'Bruno', venda: '2026-11-06', carro: 'L200 Triton 2018 · 2" · Branco', envio: '2026-11-13', valor: 4790, acao: 'conferir_enviar', falta: ['Conferir parte técnica'], fase: 'Parte técnica', msgs: 0, parcelas: [{ v: 4790, pago: true, rot: 'À vista · PIX' }] },
+    { id: 8, num: '26100347', cliente: 'Sítio Boa Esperança', vend: 'Carla', venda: '2026-11-07', carro: 'Silverado 2025 · 3" · Preto', envio: '2026-11-25', valor: 11450, acao: 'acompanhar', falta: [], fase: 'Pintura', msgs: 0, parcelas: [{ v: 5725, pago: true, rot: 'Entrada · PIX' }, { v: 5725, pago: false, rot: 'Saldo · antes do envio' }] },
+    { id: 9, num: '26100351', cliente: 'Diego Martins Rocha', vend: 'Heitor', venda: '2026-10-27', carro: 'Hilux 2017 · −1" · Preto', envio: '2026-11-09', valor: 3980, acao: 'acompanhar', falta: [], fase: 'Checagem final', msgs: 0, parcelas: [{ v: 3980, pago: true, rot: 'À vista · cartão' }] },
+    { id: 10, num: '26100355', cliente: 'Clínica Veterinária Campo Largo', vend: 'Gabriela', venda: '2026-11-08', carro: 'Toro 2022 · 1" · Cinza', envio: '2026-11-19', valor: 3650, acao: 'receber', falta: ['Receber parcela vencida em 08/11'], fase: 'Montagem', msgs: 0, parcelas: [{ v: 1825, pago: true, rot: '1ª parcela' }, { v: 1825, pago: false, rot: '2ª parcela · venceu 08/11' }] },
+    { id: 11, num: '26100362', cliente: 'Gilmar Bortolotto', vend: 'Diego', venda: '2026-11-06', carro: 'Tundra 2023 · sob medida', envio: '2026-11-24', valor: 8920, acao: 'engenharia', falta: ['Gabarito com a engenharia até 14/11'], fase: 'Com a engenharia', msgs: 0, parcelas: [{ v: 8920, pago: true, rot: 'À vista · PIX' }] },
+    { id: 12, num: '26100309', cliente: 'Agropecuária Três Marcos', vend: 'Heitor', venda: '2026-11-02', carro: 'RAM 2500 2020 · sob medida', envio: '2026-11-16', valor: 10340, acao: 'engenharia', falta: ['Prazo da engenharia venceu em 08/11'], fase: 'Com a engenharia', msgs: 0, parcelas: [{ v: 5170, pago: true, rot: 'Entrada · PIX' }, { v: 5170, pago: false, rot: 'Saldo · antes do envio' }] },
+    { id: 13, num: '26100358', cliente: 'Fernanda Kowalski', vend: 'Elisa', venda: '2026-11-09', carro: 'Ranger 2015 · 2" · Preto', envio: '2026-11-24', valor: 4960, acao: 'alteracao', falta: ['Vendedora pediu: trocar a cor do par traseiro para Preto'], fase: 'Fila de produção', msgs: 0, parcelas: [{ v: 4960, pago: true, rot: 'À vista · PIX' }] },
+  ]
+  const clone = (o) => JSON.parse(JSON.stringify(o))
+  let pedidos = clone(base)
+  const st = { fila: 'todos', q: '', ordem: { col: 'envio', dir: 1 }, aberto: null, sec: null, sel: -1, feitos: new Map(), novo: false, excluir: false, erro: '', abaH: 'pedidos', fim: null }
+  const el = () => document.getElementById('conteudo')
+  const camada = () => document.getElementById('camada-pd')
+  const RG = (n) => `<span class="regra" aria-hidden="true">${n}</span>`
+  const SV = { busca: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>', lixo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>' }
+  const sit = (p) => !p.envio ? 'sem' : dias(p.envio) > 0 ? 'atr' : dias(p.envio) >= -3 ? 'prox' : 'ok'
+  const filaDe = (p) => FILA_DE[p.acao]
+
+  // ── Ações com Desfazer: guarda o estado anterior do pedido ───────────────
+  function resolver(p, muda, msg) {
+    const antes = clone(p)
+    muda(p)
+    if (!p.falta.length) p.acao = 'acompanhar'
+    st.feitos.set(p.id, msg)
+    const undo = () => { for (const k of Object.keys(p)) delete p[k]; Object.assign(p, antes); st.feitos.delete(p.id); st.undos.delete(p.id); if (st.fim === p.id) st.fim = null; render() }
+    st.undos.set(p.id, undo)
+    render()
+    toast(msg, undo)
+  }
+
+  // ═══════════════ HOJE ═══════════════
+  function telaHoje() {
+    const ab = st.abaH
+    const lista = ab === 'pedidos' ? pedidos : ab === 'pendencias' ? pedidos.filter((p) => p.falta.length || p.msgs) : ab === 'concluir' ? pedidos.filter((p) => p.acao === 'fazer_ficha') : ab === 'dev' ? pedidos.filter((p) => p.acao === 'engenharia') : pedidos.filter((p) => p.acao === 'alteracao')
+    const abas = [['pedidos', 'Pedidos', 0], ['pendencias', 'Pendências', pedidos.filter((p) => p.falta.length || p.msgs).length], ['concluir', 'Concluir pedido', pedidos.filter((p) => p.acao === 'fazer_ficha').length], ['dev', 'Fichas em desenvolvimento', pedidos.filter((p) => p.acao === 'engenharia').length], ['alt', 'Alterações de venda', pedidos.filter((p) => p.acao === 'alteracao').length]]
+    return `<div class="pd-h">
+      <div class="h-cab" data-m><div><h1>Pedidos</h1><p>7.331 pedidos · ${pedidos.length} ativos · 7.318 enviados <span style="color:var(--warn)">· 2 sem número</span></p></div><div class="b"><button type="button" class="btn btn-sec" data-pdh-aba="alt">Alterações</button><button type="button" class="btn btn-prim" data-pdh-toast="Formulário de novo pedido">+ Novo pedido</button></div></div>
+      <div class="h-abas" role="tablist" data-m>${abas.map(([k, r, n]) => `<button type="button" role="tab" aria-selected="${ab === k}" data-pdh-aba="${k}">${r}${n ? `<span class="n">${n}</span>` : ''}</button>`).join('')}</div>
+      <div class="h-busca" data-m><label>Buscar pedido ou cliente</label><button type="button" class="btn btn-sec" data-pdh-toast="Folha de filtros: prazo, resolver, ordem">Filtros</button></div>
+      <p class="h-regua" data-m>${lista.length} pedidos em andamento, do mais novo ao mais antigo</p>
+      <div class="h-tab" data-m><div class="h-cabt"><span>Pedido</span><span>Cliente</span><span>Carro</span><span>Envio</span><span>Valor</span><span>O que falta</span><span></span></div>
+      ${lista.map((p) => `<article class="h-lin"><a href="#" data-pdh-toast="Abre o pedido ${p.num} em janela por cima"><span class="num">${p.num}</span><span><span class="nm">${esc(p.cliente)}</span><span class="sb">${p.vend} · ${dBR(p.venda)}</span></span><span class="sb">${esc(p.carro)}</span><span class="num ${sit(p) === 'atr' ? 'atr' : ''}">${dBR(p.envio)}${sit(p) === 'atr' ? ` · ${dias(p.envio)}d` : ''}</span><span class="num">${brl(p.valor)}</span><span>${p.falta.length ? p.falta.map(esc).join('<br>') : esc(p.fase)}</span></a>
+        <div class="h-ac"><button type="button" class="btn ${p.acao === 'fazer_ficha' ? 'btn-prim' : 'btn-sec'}" data-pdh-toast="${ROTULO[p.acao]}">${ROTULO[p.acao]}</button><button type="button" class="lx" aria-label="Excluir pedido" data-pdh-toast="Excluir pedido: apaga o pedido e todas as fichas">${SV.lixo}</button></div></article>`).join('')}</div>
+    </div>`
+  }
+
+  // ═══════════════ PROPOSTA ═══════════════
+  function visiveis() {
+    const q = st.q.trim().toLowerCase()
+    // Linha resolvida fica no lugar até trocar de fila (regra 7)
+    const l = pedidos.filter((p) => (st.fila === 'todos' || (st.fila === 'atrasados' ? sit(p) === 'atr' : st.fila === 'perto' ? sit(p) === 'prox' : filaDe(p) === st.fila) || (st.feitos.has(p.id) && st.presos.has(p.id))) && (!q || [p.num, p.cliente, p.carro, p.vend].join(' ').toLowerCase().includes(q)))
+    const { col, dir } = st.ordem
+    const val = (p) => col === 'envio' ? (p.envio ? new Date(p.envio).getTime() : 9e15) : col === 'valor' ? p.valor : col === 'cliente' ? p.cliente : p.num
+    return l.sort((a, b) => (typeof val(a) === 'string' ? val(a).localeCompare(val(b)) : val(a) - val(b)) * dir)
+  }
+  function linhasAtraso(atrasadosL) {
+    return atrasadosL.map((p) => {
+          const adm = p.falta.length > 0, feito = st.feitos.get(p.id)
+          return `<div class="at-lin" data-pd-abrir="${p.id}">
+            <span class="at-dias">${dias(p.envio)}d<small>atraso</small></span>
+            <span class="at-q"><b>${p.num} · ${esc(p.cliente)}</b><span>envio era ${dBR(p.envio)} · ${esc(p.carro)}</span></span>
+            <span class="at-quem"><span class="pill ${adm ? 'atr' : 'ate'}">${adm ? 'ADM precisa agir' : 'Na fábrica'}</span><span>${adm ? esc(p.falta[0]) : esc(p.fase)}</span></span>
+            ${feito ? `<span class="pl-ok">Resolvido<button type="button" data-pd-desfazer="${p.id}">Desfazer</button></span>` : `<button type="button" class="btn ${adm ? 'btn-prim' : 'btn-sec'}" data-pd-acao="${p.id}">${adm ? ROTULO[p.acao] : 'Avisar o cliente'}</button>`}
+          </div>`
+        }).join('')
+  }
+  function telaProposta() {
+    const cont = (k) => k === 'todos' ? pedidos.length : k === 'atrasados' ? pedidos.filter((p) => sit(p) === 'atr').length : pedidos.filter((p) => filaDe(p) === k).length
+    const atrasadosL = pedidos.filter((p) => sit(p) === 'atr').sort((a, b) => dias(b.envio) - dias(a.envio))
+    const perto = pedidos.filter((p) => sit(p) === 'prox').length
+    const travam = pedidos.filter((p) => TRAVA.has(filaDe(p))).length
+    const atrasados = pedidos.filter((p) => sit(p) === 'atr' && filaDe(p) !== 'andamento').length
+    const aReceber = pedidos.reduce((s, p) => s + p.parcelas.filter((c) => !c.pago).reduce((a, c) => a + c.v, 0), 0)
+    const engVencido = pedidos.filter((p) => p.acao === 'engenharia' && /venceu/.test(p.falta[0] || '')).length
+    const lista = visiveis()
+    if (st.sel >= lista.length) st.sel = lista.length - 1
+    const sortA = (c) => st.ordem.col === c ? `aria-sort="${st.ordem.dir > 0 ? 'ascending' : 'descending'}"` : ''
+    const kpi = (fila, rot, v, pe) => `<button type="button" class="cartao kpi clic" data-pd-kpi="${fila}" aria-pressed="${st.fila === fila}"><span class="rot">${rot}</span><span class="v">${v}</span><span class="pe">${pe}</span></button>`
+    return `<div class="prop">
+      <header class="p-cab" data-m>
+        <div><h1>Pedidos</h1><p class="sub">${pedidos.length} em andamento · 7.331 no acervo · 2 sem número</p></div>
+        <div class="dir rel"><span class="atualizado">Atualizado às 15:42</span><button type="button" class="btn btn-sec" id="pd-atalhos" title="Atalhos (?)">Atalhos</button><button type="button" class="btn btn-prim" id="pd-novo" title="Novo pedido (N)">Novo pedido</button>${RG('2')}</div>
+      </header>
+
+
+      <section class="kpis k-compacto rel" data-m>
+        ${RG('1·8')}
+        ${kpi('trava', 'Travam a fábrica', travam, `<span class="pill ${travam ? 'atr' : 'ok'}">${travam ? 'receber ou parte técnica' : 'nada travado'}</span>`)}
+        ${kpi('perto', 'Vencem em até 3 dias', perto, perto ? `<span class="pill ate">próximos a atrasar</span>` : '<small>nenhum perto do prazo</small>')}
+        ${kpi('receber', 'A receber', brl(aReceber), `<small>${pedidos.filter((p) => p.parcelas.some((c) => !c.pago)).length} pedidos com saldo</small>`)}
+        ${kpi('engenharia', 'Com a engenharia', cont('engenharia'), engVencido ? `<span class="pill atr">${engVencido} com prazo vencido</span>` : '<small>todos no prazo</small>')}
+      </section>
+
+      <div class="linha-busca-pd rel" data-m>
+        <div class="filas" role="tablist" aria-label="Filas">${FILAS.map(([k, r]) => `<button type="button" role="tab" class="fila ${k === 'atrasados' && cont(k) ? 'alerta' : TRAVA.has(k) && cont(k) ? 'trava' : ''}" data-pd-fila="${k}" aria-selected="${st.fila === k}">${r}<b>${cont(k)}</b></button>`).join('')}</div>
+        <label class="busca-pd">${SV.busca}<input id="pd-q" type="search" value="${esc(st.q)}" placeholder="Buscar pedido, cliente ou carro  ( / )" aria-label="Buscar pedidos"></label>
+        ${RG('1·2·8')}
+      </div>
+
+      <section class="cartao" data-m aria-label="Lista de pedidos">
+        ${RG('3·6·7')}
+        ${st.fila === 'atrasados' ? `<div class="t-topo"><h2 style="color:var(--danger)">${atrasadosL.length} pedido${atrasadosL.length === 1 ? '' : 's'} atrasado${atrasadosL.length === 1 ? '' : 's'}</h2>${atrasadosL.length ? `<span class="pill atr">o mais antigo há ${dias(atrasadosL[0].envio)} dias</span>` : ''}</div>
+        <p class="c-sub">O prazo de envio já passou. Do mais atrasado para o menos, com quem precisa agir.</p>
+        <div class="at-lista">${atrasadosL.length ? linhasAtraso(atrasadosL) : '<p class="pl-vazio">Nenhum pedido atrasado.</p>'}</div>` : `<div class="t-topo"><h2>${FILAS.find(([k]) => k === st.fila)?.[1] ?? (st.fila === 'perto' ? 'Vencem em até 3 dias' : 'Pedidos')}</h2><span class="atualizado">${lista.length} pedido${lista.length === 1 ? '' : 's'} · J/K andam, Enter abre</span></div>
+        <div class="pl" role="table">
+          <div class="pl-cab" role="row"><button type="button" data-pd-ord="num" ${sortA('num')} style="padding-left:8px">Pedido</button><button type="button" data-pd-ord="cliente" ${sortA('cliente')}>Cliente</button><span>Carro</span><button type="button" data-pd-ord="envio" ${sortA('envio')}>Envio</button><button type="button" data-pd-ord="valor" ${sortA('valor')}>Valor</button><span>O que falta</span><span></span></div>
+          ${lista.length ? lista.map((p, i) => {
+            const s = sit(p)
+            const feito = st.feitos.get(p.id)
+            const envio = p.envio ? `${dBR(p.envio)}${s === 'atr' ? `<span class="pill atr">${dias(p.envio)}d atrasado</span>` : s === 'prox' ? '<span class="pill ate">perto</span>' : ''}` : '<span class="pill">sem prazo</span>'
+            const destaque = TRAVA.has(filaDe(p))
+            return `<div class="pl-lin ${i === st.sel ? 'sel' : ''} ${feito ? 'feito' : ''} ${s === 'atr' ? 'atrasado' : ''}" role="row" data-pd-abrir="${p.id}">
+              <span class="pl-num">${p.num}</span>
+              <span class="pl-cli"><b>${esc(p.cliente)}</b><span>${p.vend} · venda ${dBR(p.venda)}${p.msgs ? ` · <span class="msg">${p.msgs} mensage${p.msgs === 1 ? 'm' : 'ns'}</span>` : ''}</span></span>
+              <span class="pl-carro">${esc(p.carro)}</span>
+              <span class="pl-envio">${envio}</span>
+              <span class="pl-valor">${brl(p.valor)}</span>
+              <span class="pl-falta">${p.falta.length ? esc(p.falta[0]) + (p.falta.length > 1 ? `<span class="mais" title="${esc(p.falta.slice(1).join(' · '))}">+${p.falta.length - 1}</span>` : '') : esc(p.fase)}</span>
+              ${feito ? `<span class="pl-ok">Resolvido<button type="button" data-pd-desfazer="${p.id}">Desfazer</button></span>` : `<span class="pl-ac"><button type="button" class="btn ${destaque ? 'btn-prim' : 'btn-sec'}" data-pd-acao="${p.id}">${ROTULO[p.acao]}</button></span>`}
+            </div>`
+          }).join('') : '<p class="pl-vazio">Nada nesta fila. Troque de fila ou limpe a busca.</p>'}
+        </div>`}
+      </section>
+    </div>`
+  }
+
+  // ═══════════════ GAVETA ═══════════════
+  function gaveta() {
+    if (st.novo) return gavetaNovo()
+    const p = pedidos.find((x) => x.id === st.aberto); if (!p) return ''
+    const saldo = p.parcelas.filter((c) => !c.pago).reduce((a, c) => a + c.v, 0)
+    const fim = st.fim === p.id
+    const secPag = `<section class="gv-sec" id="gv-pag" data-m><h3>Pagamento</h3>${p.parcelas.map((c, i) => `<div class="gv-parc"><span><span class="num">${brl(c.v)}</span><small>${esc(c.rot)}</small></span>${c.pago ? '<span class="pill ok">Pago</span>' : `<button type="button" class="btn btn-prim btn-p" data-pd-pagar="${p.id}:${i}">Marcar pago</button>`}</div>`).join('')}
+      ${st.pagando ? `<form class="gv-form" id="pd-f-pago"><label class="gv-campo">Valor recebido (R$)<input id="pd-v-pago" inputmode="numeric" value="${p.parcelas[st.pagando.i].v.toLocaleString('pt-BR')}"></label>${st.erro ? `<p class="gv-erro">${st.erro}</p>` : ''}<div class="gv-linha"><button type="button" class="btn btn-sec" id="pd-cancela-pago">Cancelar</button><button type="submit" class="btn btn-prim">Confirmar recebimento</button></div></form>` : ''}</section>`
+    const secPrazo = p.acao === 'informar_prazo' ? `<section class="gv-sec" data-m><h3>Prazo de envio</h3><form class="gv-form" id="pd-f-prazo"><label class="gv-campo">Enviar até<input type="date" id="pd-v-prazo" min="2026-11-12"></label>${st.erro ? `<p class="gv-erro">${st.erro}</p>` : ''}<div class="gv-linha"><button type="submit" class="btn btn-prim">Salvar prazo</button></div></form></section>` : ''
+    const secFrete = p.acao === 'definir_frete' ? `<section class="gv-sec" data-m><h3>Frete</h3><form class="gv-form" id="pd-f-frete"><label class="gv-campo">Transportadora<select id="pd-v-transp"><option value="">Escolha</option><option>Rodonaves</option><option>Braspress</option><option>Jamef</option><option>Retirada na fábrica</option></select></label><label class="gv-campo">Valor do frete (R$)<input id="pd-v-frete" inputmode="numeric" placeholder="0"></label>${st.erro ? `<p class="gv-erro">${st.erro}</p>` : ''}<div class="gv-linha"><button type="submit" class="btn btn-prim">Salvar frete</button></div></form></section>` : ''
+    const secAlt = p.acao === 'alteracao' ? `<section class="gv-sec" data-m><h3>Alteração pedida</h3><p>${esc(p.falta[0])}</p><div class="gv-linha"><button type="button" class="btn btn-sec" data-pd-alt="recusar">Recusar</button><button type="button" class="btn btn-prim" data-pd-alt="aprovar">Aprovar e avisar a fábrica</button></div></section>` : ''
+    const secTec = (p.acao === 'fazer_ficha' || p.acao === 'conferir_enviar') ? `<section class="gv-sec" data-m><h3>Parte técnica</h3><div class="gv-linha" style="justify-content:flex-start"><button type="button" class="btn btn-prim" data-pd-tec="${p.id}">${ROTULO[p.acao]}</button></div></section>` : ''
+    const secExc = st.excluir ? `<form class="gv-form" id="pd-f-exc" style="box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 40%, transparent)"><b>Excluir o pedido ${p.num} e todas as fichas?</b><label class="gv-campo">Digite o número do pedido para confirmar<input id="pd-v-exc" inputmode="numeric" autocomplete="off"></label><div class="gv-linha"><button type="button" class="btn btn-sec" id="pd-exc-cancela">Cancelar</button><button type="submit" class="btn btn-perigo" id="pd-exc-ok" disabled>Excluir pedido</button></div></form>` : ''
+    return `<div class="gaveta-fundo" id="pd-fundo"></div><aside class="gaveta" role="dialog" aria-modal="true" aria-label="Pedido ${p.num}">
+      <div class="gv-cab"><div class="t"><span class="chip-num" style="justify-self:start">Nº ${p.num}</span><h2>${esc(p.cliente)}</h2><div class="pills"><span class="pill">${esc(p.fase)}</span>${sit(p) === 'atr' ? `<span class="pill atr">${dias(p.envio)}d atrasado</span>` : ''}</div></div><button type="button" class="btn btn-sec" id="pd-fechar" title="Fechar (Esc)">Fechar</button></div>
+      <div class="gv-corpo">
+        ${fim ? `<div class="gv-faixa ok" data-m><b>Pedido sem pendência. A saída está liberada.</b><span>O pedido segue na fábrica: ${esc(p.fase)}.</span><div class="gv-linha" style="justify-content:flex-start"><button type="button" class="btn btn-prim" id="pd-proximo">Próximo pendente</button></div></div>`
+          : `<div class="gv-faixa ${p.falta.length ? '' : 'ok'}" data-m><b>${p.falta.length ? 'O que falta' : 'Sem pendência'}</b><span>${p.falta.length ? p.falta.map(esc).join('<br>') : 'O pedido segue na fábrica: ' + esc(p.fase) + '.'}</span></div>`}
+        ${secTec}${secFrete}${secPrazo}${secAlt}
+        <section class="gv-sec" data-m><h3>Venda</h3><dl class="gv-dl"><div><dt>Vendedor</dt><dd>${p.vend}</dd></div><div><dt>Data da venda</dt><dd>${dBR(p.venda)}/2026</dd></div><div><dt>Carro</dt><dd>${esc(p.carro)}</dd></div><div><dt>Envio</dt><dd>${p.envio ? dBR(p.envio) + '/2026' : 'sem prazo'}</dd></div><div><dt>Valor</dt><dd>${brl(p.valor)}</dd></div><div><dt>Saldo</dt><dd>${brl(saldo)}</dd></div></dl></section>
+        ${secPag}
+        ${secExc}
+      </div>
+      <div class="gv-rod"><button type="button" class="link-perigo" id="pd-excluir">Excluir pedido</button><span class="atualizado">Esc fecha · a lista fica onde estava</span></div>
+    </aside>`
+  }
+  function gavetaNovo() {
+    return `<div class="gaveta-fundo" id="pd-fundo"></div><aside class="gaveta" role="dialog" aria-modal="true" aria-label="Novo pedido">
+      <div class="gv-cab"><div class="t"><h2>Novo pedido</h2></div><button type="button" class="btn btn-sec" id="pd-fechar">Fechar</button></div>
+      <form class="gv-corpo" id="pd-f-novo">
+        <label class="gv-campo">Cliente<input id="pd-n-cli" required autocomplete="off"></label>
+        <label class="gv-campo">Telefone<input id="pd-n-tel" inputmode="tel" placeholder="(41) 9 9999-0000"></label>
+        <label class="gv-campo">Vendedor<select id="pd-n-vend"><option value="">Escolha</option><option>Amanda</option><option>Bruno</option><option>Carla</option><option>Diego</option><option>Elisa</option></select></label>
+        <label class="gv-campo">Data da venda<input id="pd-n-data" type="date" max="2026-11-11" value="2026-11-11"></label>
+        <label class="gv-campo">Carro<input id="pd-n-carro" placeholder="Hilux 2024 · 2&quot; · Preto"></label>
+        <label class="gv-campo">Valor (R$)<input id="pd-n-valor" inputmode="numeric"></label>
+        ${st.erro ? `<p class="gv-erro">${st.erro}</p>` : ''}
+        <div class="gv-linha"><button type="submit" class="btn btn-prim">Salvar pedido</button></div>
+      </form>
+    </aside>`
+  }
+
+  const ATALHOS = `<div class="fundo" id="pd-fundo-at"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="pd-t-at"><h2 id="pd-t-at">Atalhos</h2><div class="atalhos">
+    <div><span>Buscar</span><kbd>/</kbd></div><div><span>Andar na lista</span><span><kbd>J</kbd> <kbd>K</kbd></span></div><div><span>Abrir o pedido</span><kbd>Enter</kbd></div>
+    <div><span>Novo pedido</span><kbd>N</kbd></div><div><span>Fechar</span><kbd>Esc</kbd></div><div><span>Esta lista</span><kbd>?</kbd></div></div>
+    <div class="rod"><button type="button" class="btn btn-prim" id="pd-fecha-at">Fechar</button></div></div></div>`
+
+  function render() {
+    el().innerHTML = APP.modo === 'atual' ? telaHoje() : telaProposta()
+    renderCamada()
+  }
+  function renderCamada() { camada().innerHTML = APP.modo === 'proposta' ? (st.atalhos ? ATALHOS : (st.aberto != null || st.novo) ? gaveta() : '') : '' }
+
+  let tId
+  function toast(msg, desfazer) {
+    document.querySelector('.toast')?.remove()
+    const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status')
+    t.innerHTML = `<span>${msg}</span>${desfazer ? '<button type="button" class="desfazer">Desfazer</button>' : ''}`
+    document.body.appendChild(t)
+    if (desfazer) t.querySelector('.desfazer').onclick = () => { t.remove(); desfazer() }
+    clearTimeout(tId); tId = setTimeout(() => t.remove(), 6000)
+  }
+  function abrir(id, sec) {
+    st.aberto = id; st.novo = false; st.excluir = false; st.pagando = null; st.erro = ''; st.fim = null; renderCamada()
+    if (sec) setTimeout(() => document.getElementById(sec)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 0)
+  }
+  function fechar() { st.aberto = null; st.novo = false; st.atalhos = false; st.excluir = false; st.pagando = null; st.erro = ''; st.fim = null; renderCamada() }
+  st.presos = new Set(); st.undos = new Map()
+  function prender(p) { st.presos.add(p.id) }
+
+  document.addEventListener('click', (e) => {
+    if (APP.tela !== 'pedidos') return
+    const t = e.target.closest('button, a, [data-pd-abrir], #pd-fundo, #pd-fundo-at'); if (!t) return
+    const d = t.dataset
+    if (d.pdhAba) { st.abaH = d.pdhAba; render(); return }
+    if (d.pdhToast) { e.preventDefault(); toast(d.pdhToast + ' (tela de hoje).'); return }
+    if (d.pdFila) { st.fila = d.pdFila; st.sel = -1; st.presos.clear(); render(); return }
+    if (d.pdKpi) {
+      const k = d.pdKpi
+      if (k === 'trava') st.fila = 'receber'; else st.fila = k
+      st.presos.clear(); render(); return
+    }
+    if (d.pdOrd) { st.ordem = { col: d.pdOrd, dir: st.ordem.col === d.pdOrd ? -st.ordem.dir : 1 }; render(); return }
+    if (d.pdDesfazer) {
+      e.stopPropagation(); st.undos.get(+d.pdDesfazer)?.(); document.querySelector('.toast')?.remove(); return
+    }
+    if (d.pdAcao) {
+      e.stopPropagation()
+      const p = pedidos.find((x) => x.id === +d.pdAcao)
+      if (t.textContent.trim() === 'Avisar o cliente') { prender(p); const antes = p.avisado; p.avisado = true; st.feitos.set(p.id, 'aviso'); const undo = () => { p.avisado = antes; st.feitos.delete(p.id); st.undos.delete(p.id); render() }; st.undos.set(p.id, undo); render(); toast(`Aviso de nova previsão enviado ao cliente do ${p.num}.`, undo); return }
+      if (p.acao === 'receber') abrir(p.id, 'gv-pag')
+      else if (p.acao === 'fazer_ficha' || p.acao === 'conferir_enviar') { prender(p); resolver(p, (q) => { q.falta = []; q.fase = 'Fila de produção' }, p.acao === 'fazer_ficha' ? `Parte técnica do ${p.num} criada. O pedido foi para a fábrica.` : `Pedido ${p.num} conferido e enviado à fábrica.`) }
+      else abrir(p.id)
+      return
+    }
+    if (d.pdAbrir) { abrir(+d.pdAbrir); return }
+    if (d.pdPagar) { const [, i] = d.pdPagar.split(':').map(Number); st.pagando = { i }; st.erro = ''; renderCamada(); document.getElementById('pd-v-pago')?.focus(); return }
+    if (d.pdTec) { const p = pedidos.find((x) => x.id === +d.pdTec); prender(p); resolver(p, (q) => { q.falta = []; q.fase = 'Fila de produção' }, `Parte técnica do ${p.num} criada. O pedido foi para a fábrica.`); st.fim = p.id; renderCamada(); return }
+    if (d.pdAlt) {
+      const p = pedidos.find((x) => x.id === st.aberto); prender(p)
+      resolver(p, (q) => { q.falta = []; if (d.pdAlt === 'aprovar') q.fase = 'Fila de produção · alteração aprovada' }, d.pdAlt === 'aprovar' ? `Alteração do ${p.num} aprovada. A fábrica foi avisada.` : `Alteração do ${p.num} recusada. A vendedora foi avisada.`)
+      st.fim = p.id; renderCamada(); return
+    }
+    switch (t.id) {
+      case 'pd-novo': st.novo = true; st.aberto = null; st.erro = ''; renderCamada(); document.getElementById('pd-n-cli')?.focus(); return
+      case 'pd-atalhos': st.atalhos = true; renderCamada(); return
+      case 'pd-fecha-at': case 'pd-fundo-at': if (t.id === 'pd-fecha-at' || e.target.id === 'pd-fundo-at') { st.atalhos = false; renderCamada() } return
+      case 'pd-fechar': case 'pd-fundo': fechar(); return
+      case 'pd-cancela-pago': st.pagando = null; st.erro = ''; renderCamada(); return
+      case 'pd-excluir': st.excluir = true; renderCamada(); document.getElementById('pd-v-exc')?.focus(); return
+      case 'pd-exc-cancela': st.excluir = false; renderCamada(); return
+      case 'pd-proximo': {
+        const prox = pedidos.find((x) => TRAVA.has(filaDe(x)) && x.id !== st.aberto)
+        if (prox) abrir(prox.id, prox.acao === 'receber' ? 'gv-pag' : null); else { fechar(); toast('Nada mais travando a fábrica.') }
+        return
+      }
+    }
+  })
+  document.addEventListener('input', (e) => {
+    if (APP.tela !== 'pedidos') return
+    if (e.target.id === 'pd-q') { st.q = e.target.value; st.sel = -1; render(); const q = document.getElementById('pd-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length) }
+    if (e.target.id === 'pd-v-exc') { const p = pedidos.find((x) => x.id === st.aberto); document.getElementById('pd-exc-ok').disabled = e.target.value.trim() !== p.num }
+  })
+  document.addEventListener('submit', (e) => {
+    if (APP.tela !== 'pedidos') return
+    e.preventDefault()
+    const p = pedidos.find((x) => x.id === st.aberto)
+    const id = e.target.id
+    if (id === 'pd-f-pago') {
+      const parc = p.parcelas[st.pagando.i]
+      const v = Number(document.getElementById('pd-v-pago').value.replace(/\D/g, '')) || 0
+      if (!v) { st.erro = 'Informe o valor recebido.'; renderCamada(); return }
+      if (v > parc.v) { st.erro = `O valor passa da parcela (${brl(parc.v)}). Confira antes de confirmar.`; renderCamada(); return }
+      const i = st.pagando.i; st.pagando = null; st.erro = ''
+      prender(p)
+      resolver(p, (q) => {
+        if (v < q.parcelas[i].v) { q.parcelas[i].v -= v; q.parcelas.splice(i, 0, { v, pago: true, rot: 'Parcial · hoje' }) } else q.parcelas[i].pago = true
+        if (q.parcelas.every((c) => c.pago)) q.falta = q.falta.filter((f) => !/^Receber/.test(f))
+      }, `Recebimento de ${brl(v)} registrado no ${p.num}.`)
+      if (!p.falta.length || p.acao === 'acompanhar') st.fim = p.id
+      renderCamada(); return
+    }
+    if (id === 'pd-f-prazo') {
+      const v = document.getElementById('pd-v-prazo').value
+      if (!v) { st.erro = 'Escolha a data.'; renderCamada(); return }
+      const w = new Date(v + 'T12:00:00').getDay()
+      if (v <= '2026-11-11') { st.erro = 'A data precisa ser depois de hoje.'; renderCamada(); return }
+      if (w === 0 || w === 6) { st.erro = 'Sábado e domingo não têm envio. Escolha um dia útil.'; renderCamada(); return }
+      st.erro = ''; prender(p)
+      resolver(p, (q) => { q.envio = v; q.falta = q.falta.filter((f) => !/prazo/i.test(f)) }, `Prazo de envio do ${p.num}: ${dBR(v)}.`)
+      st.fim = p.id; renderCamada(); return
+    }
+    if (id === 'pd-f-frete') {
+      const tr = document.getElementById('pd-v-transp').value, vf = Number(document.getElementById('pd-v-frete').value.replace(/\D/g, '')) || 0
+      if (!tr) { st.erro = 'Escolha a transportadora ou Retirada na fábrica.'; renderCamada(); return }
+      if (!vf && tr !== 'Retirada na fábrica') { st.erro = 'Informe o valor do frete.'; renderCamada(); return }
+      st.erro = ''; prender(p)
+      resolver(p, (q) => { q.falta = q.falta.filter((f) => f !== 'Definir frete') }, `Frete do ${p.num}: ${tr}${vf ? ' · ' + brl(vf) : ''}.`)
+      if (!p.falta.length) st.fim = p.id
+      renderCamada(); return
+    }
+    if (id === 'pd-f-exc') {
+      const idx = pedidos.findIndex((x) => x.id === p.id); const [rem] = pedidos.splice(idx, 1)
+      fechar(); render()
+      toast(`Pedido ${rem.num} excluído.`, () => { pedidos.splice(idx, 0, rem); render() })
+      return
+    }
+    if (id === 'pd-f-novo') {
+      const v = (k) => document.getElementById(k).value.trim()
+      const tel = v('pd-n-tel').replace(/\D/g, '')
+      if (!v('pd-n-cli')) { st.erro = 'Informe o cliente.'; renderCamada(); return }
+      if (tel && tel.length < 10) { st.erro = 'Telefone com DDD: 10 ou 11 números.'; renderCamada(); return }
+      if (!v('pd-n-vend')) { st.erro = 'Escolha o vendedor.'; renderCamada(); return }
+      if (!(Number(v('pd-n-valor').replace(/\D/g, '')) > 0)) { st.erro = 'Informe o valor da venda.'; renderCamada(); return }
+      const novo = { id: Date.now(), num: String(26100370 + pedidos.length), cliente: v('pd-n-cli'), vend: v('pd-n-vend'), venda: v('pd-n-data') || '2026-11-11', carro: v('pd-n-carro') || '—', envio: null, valor: Number(v('pd-n-valor').replace(/\D/g, '')), acao: 'fazer_ficha', falta: ['Criar parte técnica'], fase: 'Parte técnica', msgs: 0, parcelas: [{ v: Number(v('pd-n-valor').replace(/\D/g, '')), pago: false, rot: 'À vista' }] }
+      pedidos.unshift(novo); fechar(); st.fila = 'tecnica'; render()
+      toast(`Pedido ${novo.num} salvo. Ele está em Parte técnica.`, () => { pedidos = pedidos.filter((x) => x.id !== novo.id); render() })
+    }
+  })
+  document.addEventListener('keydown', (e) => {
+    if (APP.tela !== 'pedidos' || APP.modo !== 'proposta') return
+    if (e.key === 'Escape') { if (st.aberto != null || st.novo || st.atalhos) fechar(); else if (document.activeElement?.id === 'pd-q') document.activeElement.blur(); return }
+    if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName) || st.aberto != null || st.novo) return
+    const lista = visiveis()
+    if (e.key === '/') { e.preventDefault(); document.getElementById('pd-q')?.focus() }
+    else if (e.key.toLowerCase() === 'j') { st.sel = Math.min(lista.length - 1, st.sel + 1); render() }
+    else if (e.key.toLowerCase() === 'k') { st.sel = Math.max(0, st.sel - 1); render() }
+    else if (e.key === 'Enter' && st.sel >= 0) abrir(lista[st.sel].id)
+    else if (e.key.toLowerCase() === 'n') { e.preventDefault(); st.novo = true; renderCamada(); document.getElementById('pd-n-cli')?.focus() }
+    else if (e.key === '?') { st.atalhos = true; renderCamada() }
+  })
+
+  const regras = `<aside class="painel-regras" id="painel-regras" aria-label="As 8 regras de ouro nesta tela"><h2>As 8 regras de ouro em Pedidos</h2><ol>
+    <li><span class="n">1</span><div><b>Consistência</b><span>As 5 abas e a folha de filtros viraram uma lista só, com filas. Mesmo cartão e mesma linha do painel comercial.</span></div></li>
+    <li><span class="n">2</span><div><b>Atalhos e uso por todos</b><span>/ busca, J e K andam, Enter abre, N novo pedido, Esc fecha. No celular os botões têm 48 px.</span></div></li>
+    <li><span class="n">3</span><div><b>Retorno claro</b><span>A aba Atrasados fica em vermelho com o contador; na lista, a linha atrasada tem faixa vermelha. A linha resolvida fica verde no lugar.</span></div></li>
+    <li><span class="n">4</span><div><b>Diálogo que termina</b><span>Receber: valor, confirmar e "Pedido sem pendência. A saída está liberada.", com o botão Próximo pendente.</span></div></li>
+    <li><span class="n">5</span><div><b>Evitar erro</b><span>A lixeira saiu de cada linha: excluir fica no pedido e pede o número. Valor acima da parcela não passa; prazo não aceita data passada nem fim de semana.</span></div></li>
+    <li><span class="n">6</span><div><b>Desfazer fácil</b><span>Pagamento, prazo, frete, parte técnica, alteração, exclusão e novo pedido têm Desfazer.</span></div></li>
+    <li><span class="n">7</span><div><b>Quem manda é a pessoa</b><span>Nada some da lista depois da ação; a linha só sai quando a pessoa troca de fila. A gaveta abre por cima e a lista fica onde estava.</span></div></li>
+    <li><span class="n">8</span><div><b>Menos coisa pra lembrar</b><span>A aba Atrasados já diz os dias de atraso e quem precisa agir (ADM ou fábrica). O que falta e o botão certo estão na própria linha; a gaveta traz venda, carro e parcelas juntos; cada fila mostra quantos tem.</span></div></li>
+  </ol></aside>`
+
+  TELAS.pedidos = { render, regras, fechar }
+})()
+</script>
+<script>
+(function () {
+  // ── Roteador da demo: menu, controle do apresentador, grade ──────────────
+  const marcar = () => {
+    document.querySelectorAll('[data-tela]').forEach((b) => b.toggleAttribute('aria-current', b.dataset.tela === APP.tela))
+    document.getElementById('b-atual').setAttribute('aria-pressed', APP.modo === 'atual')
+    document.getElementById('b-prop').setAttribute('aria-pressed', APP.modo === 'proposta')
+  }
+  function renderTela() {
+    Object.values(TELAS).forEach((t) => t.fechar?.())
+    document.querySelector('.toast')?.remove()
+    TELAS[APP.tela].render()
+    marcar()
+    if (document.documentElement.classList.contains('regras')) {
+      document.getElementById('painel-regras')?.remove()
+      document.body.insertAdjacentHTML('beforeend', TELAS[APP.tela].regras)
+    }
+    document.getElementById('area').scrollTop = 0
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button'); if (!t) return
+    if (t.dataset.tela) { APP.tela = t.dataset.tela; try { location.hash = t.dataset.tela } catch {} renderTela(); return }
+    if (t.id === 'b-atual' || t.id === 'b-prop') { APP.modo = t.id === 'b-atual' ? 'atual' : 'proposta'; renderTela(); return }
+    if (t.id === 'b-grade') {
+      const on = document.documentElement.classList.toggle('grade')
+      t.setAttribute('aria-pressed', on)
+      if (!on) { med.hidden = true; alvoM?.classList.remove('alvo'); alvoM = null }
+      return
+    }
+    if (t.id === 'b-regras') {
+      const on = document.documentElement.classList.toggle('regras')
+      t.setAttribute('aria-pressed', on)
+      document.getElementById('painel-regras')?.remove()
+      if (on) { document.body.insertAdjacentHTML('beforeend', TELAS[APP.tela].regras); if (APP.modo !== 'proposta') APP.modo = 'proposta' }
+      renderTela()
+    }
+  })
+  const med = document.getElementById('medida'); let alvoM = null
+  const el = document.getElementById('conteudo')
+  document.addEventListener('mousemove', (e) => {
+    if (!document.documentElement.classList.contains('grade')) return
+    const a = e.target.closest('#conteudo [data-m]')
+    if (a !== alvoM) { alvoM?.classList.remove('alvo'); alvoM = a; a?.classList.add('alvo') }
+    if (!a) { med.hidden = true; return }
+    const r = a.getBoundingClientRect(), base = el.getBoundingClientRect()
+    const h = Math.round(r.height), y = Math.round(r.top - base.top)
+    med.textContent = `altura ${h} · topo ${y}`
+    med.classList.toggle('fora', h % 8 !== 0 || y % 8 !== 0)
+    med.hidden = false
+    med.style.left = Math.min(e.clientX + 16, innerWidth - med.offsetWidth - 8) + 'px'
+    med.style.top = (e.clientY + 16) + 'px'
+  })
+  const h = (location.hash || '').slice(1)
+  if (TELAS[h]) APP.tela = h
+  renderTela()
+})()
+</script>
