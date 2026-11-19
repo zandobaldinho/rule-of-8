@@ -4,12 +4,14 @@ Source: Ben Shneiderman (https://www.cs.umd.edu/users/ben/goldenrules.html). Eac
 
 ## 1. Strive for consistency
 - One card component, one money and number format, and one table per area. Three card styles on the same page is the most common symptom.
-- Use the same verb for the same action across the whole system.
+- Use the same verb for the same action across the whole system, and the same pattern for every row button: if most open a drawer to confirm, none acts in one click.
 - **Prevents:** people relearning every screen from scratch.
 
 ## 2. Seek universal usability (shortcuts for daily users, simple for newcomers)
 - Shortcuts: `/` search, `J`/`K` move through the list, `Enter` opens, `N` new, `Esc` closes, `←`/`→` change the day, `H` back to today, `?` lists shortcuts.
-- 48 px touch targets, contrast in both themes, everything reachable by keyboard.
+- 48 px touch targets; text contrast of at least 4.5:1 in both themes (factory tablets sit under glare).
+- Everything reachable by keyboard, with a visible focus ring. Real `<button>`s and `<label>`s, not clickable divs or placeholder-only fields. Icon-only buttons get a name (`aria-label`).
+- Status never relies on color alone: "Late" is a word or a stripe plus a word, not just red.
 - **Prevents:** frequent users slowing down and occasional users getting lost.
 
 ## 3. Offer informative feedback
@@ -26,7 +28,9 @@ Source: Ben Shneiderman (https://www.cs.umd.edu/users/ben/goldenrules.html). Eac
 
 ## 5. Prevent errors
 - The day stepper moves only through business days and never past today. A due date rejects the past and weekends.
-- An amount above the balance doesn't go through; a target below what's already sold warns before saving.
+- An amount above the balance doesn't go through; a target below what's already sold warns before saving. An implausible value (100× the usual order) asks for confirmation, and nothing is rounded silently.
+- A form never arrives pre-filled with the answer that does the most (the full balance as "amount received"); the person types or confirms it.
+- The next button never appears where the person just tapped, so a double-tap can't skip a step.
 - Missing data **suspends the conclusion** ("Comparison suspended: 1 order without an amount") instead of showing a wrong percentage.
 - Delete leaves the row and asks for the record number to be typed.
 - Real validation lives on the server. Hiding a button is not protection.
@@ -35,6 +39,7 @@ Source: Ben Shneiderman (https://www.cs.umd.edu/users/ben/goldenrules.html). Eac
 ## 6. Permit easy reversal of actions
 - Every write triggered from the screen has **Undo** in the toast and on the row itself ("Done · Undo"). The row's undo keeps working after the toast is gone.
 - Undo calls the inverse action that already exists (save the previous value, reopen), with no new logic.
+- Undo belongs to the record, not to the view: searching, filtering or switching queues must not lose it, and undoing puts the record back in every count and queue it left.
 - **Prevents:** fear of clicking, which slows everything down.
 
 ## 7. Keep users in control

@@ -5,8 +5,9 @@ The system owner decides by looking, not by reading specs. A clickable demo cost
 
 ## What it is (and isn't)
 - It is a **simulation** that mimics the system: same menu, same labels, same buttons, realistic fake data, and state that changes (marking an order paid clears its pending item and the count drops).
+- If the product already has a design system or a dashboard model, the demo uses **those components**. A demo with an invented look gets "this isn't our standard", even when the ideas are right.
 - It is **not a tutorial.** No captions, arrows or "what happens next". The presenter narrates. A step-by-step guide with screenshots is a different deliverable.
-- It is one HTML file with no server dependency, published where the owner can open it on a phone.
+- It is one HTML file with no server dependency, published where the owner can open it on a phone (or handed over as a file when you can't publish).
 
 ## The presenter control
 A discreet group in a corner (low opacity, full on hover):
@@ -15,15 +16,22 @@ A discreet group in a corner (low opacity, full on hover):
 - **Grid**: turns on the 8 px grid and shows each block's height and top on hover (green on the grid, red off it).
 - **8 rules**: numbered markers on the blocks and a side panel explaining where each rule shows up.
 
-If the demo has more than one screen, the side menu switches between them (with a `#hash` so you can send a direct link).
+If the demo has more than one screen, the side menu switches between them (with a `#hash` so you can send a direct link). Also open in **Today** when the URL has `?mode=today`. With both, `scripts/measure-grid.mjs` can measure every screen and both modes in one run:
 
-`assets/example-demo.html` is a complete example with an Orders screen and a Sales dashboard. Its UI is in Brazilian Portuguese, the language of the original project.
+```bash
+node <skill-folder>/scripts/measure-grid.mjs "file://$PWD/demo.html#orders" "file://$PWD/demo.html?mode=today#orders"
+```
+
+Drawers and dialogs aren't reached by a URL. Open them in your own Playwright flow and check the same thing: height and top multiples of 8.
+
+Start from `assets/demo-skeleton.html` (English, about 150 lines): the corner control, the grid overlay with the hover readout, the rules panel, the `?mode=today` and `#screen` routing, and a toast with Undo. `assets/example-demo.html` is a complete example with an Orders screen and a Sales dashboard. Its UI is in Brazilian Portuguese, the language of the original project.
 
 ## Checklist before showing it
 - You read the real screen's code: labels, columns, actions and permission rules.
 - The fake data is coherent: sums add up, dates land on business days, the "How we calculate" math works.
 - Every button does something (changes state or shows a toast). No dead buttons.
-- You measured the grid at 1440, 1024 and 390, in both themes.
+- Every list has its empty state, and labels survive the values 0, 1 and a very long name.
+- You measured the grid at 1440, 1024 and 390, in both themes, on every screen and in both modes.
 - You looked at the real screenshots: clipped text, wrapping labels, lone cards, the control covering content.
 - No console errors and no horizontal scroll.
 
