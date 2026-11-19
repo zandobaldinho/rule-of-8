@@ -1,0 +1,82 @@
+[
+ {
+  "query": "our ops team says the orders screen in src/app/orders/page.tsx is confusing, there are 5 tabs and people lose track of what's pending. can you redesign it?",
+  "should_trigger": true
+ },
+ {
+  "query": "make a clickable demo of the new production queue screen before we touch the code, the factory owner wants to see it first",
+  "should_trigger": true
+ },
+ {
+  "query": "the sales dashboard has like 14 KPI cards and nobody knows what to look at. clean it up",
+  "should_trigger": true
+ },
+ {
+  "query": "review the spacing on our admin panel, things look misaligned and paddings are all over the place (13px, 18px, 22px)",
+  "should_trigger": true
+ },
+ {
+  "query": "we need a tablet screen for warehouse pickers, they wear gloves. design the pick list UI",
+  "should_trigger": true
+ },
+ {
+  "query": "users keep deleting invoices by accident in the back office, add some safety to that list",
+  "should_trigger": true
+ },
+ {
+  "query": "apply the 8pt grid to the support tickets queue",
+  "should_trigger": true
+ },
+ {
+  "query": "can you check our internal CRM screens against Shneiderman's golden rules and tell me what to fix",
+  "should_trigger": true
+ },
+ {
+  "query": "the late orders alert box takes up half the dashboard, the owner hates it. what should we do instead?",
+  "should_trigger": true
+ },
+ {
+  "query": "standardize all our department dashboards (finance, production, support) so they follow the same layout",
+  "should_trigger": true
+ },
+ {
+  "query": "build a landing page for my SaaS with a hero section, pricing table and testimonials",
+  "should_trigger": false
+ },
+ {
+  "query": "fix this postgres query, it's slow on the orders table: SELECT * FROM orders WHERE status = 'late' ORDER BY created_at",
+  "should_trigger": false
+ },
+ {
+  "query": "make my portfolio site look more modern, I'm a photographer",
+  "should_trigger": false
+ },
+ {
+  "query": "write a blog post about the benefits of 8-hour workdays",
+  "should_trigger": false
+ },
+ {
+  "query": "add a dark mode toggle to my personal blog built with Astro",
+  "should_trigger": false
+ },
+ {
+  "query": "create a 2D platformer game in canvas with 8 levels",
+  "should_trigger": false
+ },
+ {
+  "query": "the orders API returns 500 when the customer has no address, find the bug",
+  "should_trigger": false
+ },
+ {
+  "query": "design an onboarding flow for my consumer meditation app on iOS",
+  "should_trigger": false
+ },
+ {
+  "query": "write unit tests for the invoice total calculation in billing.ts",
+  "should_trigger": false
+ },
+ {
+  "query": "make a slide deck presenting our Q3 sales numbers to investors",
+  "should_trigger": false
+ }
+]

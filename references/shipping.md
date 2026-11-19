@@ -12,6 +12,7 @@ Lessons from a system people use all day, where every push to the main branch go
 ## Data and rules
 - **A new rule applies to new records.** When you add a gate (for example "technical spec required"), set a cutoff date. Applying it retroactively freezes work already in progress.
 - **The screen hides, the server blocks.** Every permission and validation lives on the server. A server action using a service key bypasses database policies, so the code's filter is the barrier and needs a test.
+- **Tick off the old screen's inventory before merging.** Every filter, column, action and shortcut either exists in the new screen or was removed on purpose, with the owner's yes. Rewriting from the mockup is how features vanish; a dead-code tool (knip, ts-prune) catches the leftovers.
 - **Type casts hide nulls.** `as Type` on a field that can come back empty breaks the form in production. Validate at the boundary.
 - **Optional field plus manual mapping is a blind spot.** If a new field depends on someone remembering to map it, it ships dead. Test the path that writes it, not just the one that reads it.
 - **Migrations delivered as text and checked against the database.** Scripts list ID pairs and an invariant ("before: 270, after: 270"), get tested on a throwaway database (PGlite works) and are run by the person responsible. Never a bulk UPDATE from memory.

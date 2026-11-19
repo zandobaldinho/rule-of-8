@@ -32,6 +32,10 @@ Use 4 px only **inside** small pieces (pill, chip, mini bar, corner radius). One
 - **A label that wraps on phones.** "Late with pending items" on two lines shifts the value. Shorten the label ("Late") and move the detail to the card footer.
 - **Redefined utilities.** Projects often redefine `text-xs` (for example to 13 px). Create the model's own classes instead of trusting the name.
 - **A hidden 4 px margin** under a pill or icon. Prefer `gap` in grid or flex over loose margins.
+- **Something that opens inside a block** ("How we calculate", an expanded row) pushes everything below off the grid unless it grows by a multiple of 8. A popover or a drawer avoids the problem.
+- **A table wider than the screen.** The page never scrolls sideways. Either the table scrolls inside its own wrapper with a sticky header and first column, or each row becomes a card.
+- **Too many queue chips for a phone.** Let the chip row scroll sideways inside itself (`overflow-x: auto`), never the page, and show that there is more: the last chip cut in half or a fade at the edge. A hidden scrollbar with nothing cut off looks like the full list.
+- **A toast on a phone.** A fixed 48 px toast with a long message wraps to one word per line. Give it `left/right: 16px`, `min-height: 48px` and let the text wrap; it floats above the grid, so it doesn't need to sit on it.
 - **Auto grids leave orphan cards.** `auto-fit` with 4 cards on a medium screen becomes 3 + 1. Use fixed column counts based on **container** width (`container-type: inline-size` + `@container`): 4, then 2, then 1.
 
 ## Measure, don't eyeball
@@ -40,6 +44,6 @@ In the demo and in the code, run a script (Playwright works) that:
 2. measures `height` and `top` relative to the content container,
 3. lists the ones that are not multiples of 8.
 
-Measure at three widths (1440 dark, 1024 light, 390) in both themes, then show the owner the number ("Proposal: 0 of 18 off the grid; Today: 18 of 18 off"). In the demo, a **Grid** button draws 8 px lines and, on hover, shows "height 56 · top 312" in green or red. That sells the idea better than any explanation.
+Measure at three widths (1440, 1024, 390), each in dark and light, on every screen, then show the owner the number ("Proposal: 0 of 18 off the grid; Today: 18 of 18 off"). In the demo, a **Grid** button draws 8 px lines and, on hover, shows "height 56 · top 312" in green or red. That sells the idea better than any explanation.
 
-`scripts/measure-grid.mjs <url> [block-selector] [container-selector]` does all of this and exits with code 1 if anything is off.
+`node scripts/measure-grid.mjs <url> [more urls…] [block-selector] [container-selector]` does all of this, also fails low-contrast text (under 4.5:1, or 3:1 for large text) and touch targets under 48 px at phone width, names whatever causes a horizontal scroll, and exits with code 1 if anything is off or nothing matched. Run it from the project folder where Playwright is installed.

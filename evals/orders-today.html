@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orders — Acme Parts back office</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f4f5f7; color: #222; font-size: 13px; }
+  header { background: #1f2937; color: #fff; padding: 14px 20px; font-size: 18px; }
+  main { padding: 20px; }
+  .alert { background: #fee2e2; border: 1px solid #ef4444; padding: 10px 14px; margin-bottom: 14px; border-radius: 6px; }
+  .alert li { margin: 2px 0; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs button { padding: 6px 10px; border: 1px solid #ccc; background: #fff; border-radius: 4px; font-size: 13px; }
+  .tabs button.on { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .filters { display: flex; gap: 10px; margin-bottom: 12px; }
+  .filters input, .filters select { height: 34px; padding: 0 8px; border: 1px solid #ccc; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; height: 52px; }
+  th { background: #f9fafb; font-size: 12px; text-transform: uppercase; }
+  .st { padding: 2px 6px; border-radius: 10px; font-size: 11px; background: #e5e7eb; }
+  .btns button { height: 34px; margin-right: 4px; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
+  .btns .del { color: #b91c1c; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .kpi { background: #fff; border: 1px solid #e5e7eb; padding: 14px; border-radius: 6px; }
+  .kpi b { display: block; font-size: 22px; }
+</style>
+</head>
+<body>
+<header>Acme Parts · Orders</header>
+<main>
+  <div class="alert"><b>⚠ 4 orders are late!</b>
+    <ul>
+      <li>#1042 Rivera Farms — 9 days late — waiting payment</li>
+      <li>#1037 Northline Garage — 6 days late — no shipping set</li>
+      <li>#1051 Delta Haulers — 3 days late — tech spec missing</li>
+      <li>#1029 Ortiz &amp; Sons — 2 days late — in production</li>
+    </ul>
+  </div>
+  <div class="kpis">
+    <div class="kpi">Open orders<b>66</b></div>
+    <div class="kpi">Revenue<b>$412,300</b></div>
+    <div class="kpi">Late<b>4</b></div>
+    <div class="kpi">Avg ticket<b>$6,247</b></div>
+    <div class="kpi">Shipped this month<b>118</b></div>
+  </div>
+  <div class="tabs">
+    <button class="on">All</button><button>Payment</button><button>Tech spec</button><button>Shipping</button><button>Production</button>
+  </div>
+  <div class="filters">
+    <input placeholder="Search…"><select><option>Status</option></select><select><option>Seller</option></select><button>Apply</button>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>1058</td><td>Hill Country Ranch</td><td>11/18</td><td>$7,900</td><td><span class="st">NEW</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+      <tr><td>1051</td><td>Delta Haulers</td><td>11/04</td><td>$12,450</td><td><span class="st">TECH_PENDING</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+      <tr><td>1049</td><td>Mesa Supply Co.</td><td>11/03</td><td>—</td><td><span class="st">PAY_PENDING</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+      <tr><td>1042</td><td>Rivera Farms</td><td>10/27</td><td>$5,300</td><td><span class="st">PAY_PENDING</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+      <tr><td>1037</td><td>Northline Garage</td><td>10/22</td><td>$9,120</td><td><span class="st">SHIP_PENDING</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+      <tr><td>1029</td><td>Ortiz &amp; Sons</td><td>10/15</td><td>$3,780</td><td><span class="st">PRODUCTION</span></td><td class="btns"><button>Edit</button><button>View</button><button class="del">🗑</button></td></tr>
+    </tbody>
+  </table>
+</main>
+<script>
+  // Clicking delete removes the row immediately. Status changes happen in the Edit page (not shown).
+  document.querySelectorAll('.del').forEach((b) => b.onclick = () => b.closest('tr').remove())
+</script>
+</body>
+</html>

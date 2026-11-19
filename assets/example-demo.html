@@ -1,5 +1,9 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Demo regra de 8</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap">
@@ -423,7 +427,11 @@ kbd { font-family: var(--mono); font-size: 12px; line-height: 16px; padding: 4px
   .linha-busca-pd .busca-pd { max-width: none; }
 }
 @media (max-width: 767px) { .pl-ac .btn, .fila, .busca-pd { height: 48px; } .gv-campo input, .gv-campo select { height: 48px; } }
+/* Touch: the input fills its 48 px box; small inline controls get a 48 px hit area without moving the layout */
+@media (max-width: 767px) { .busca-pd input { align-self: stretch; } .link { min-height: 48px; margin-block: -12px; } .chave { height: 48px; margin-block: -8px; } }
 </style>
+</head>
+<body>
 
 <div class="casca">
   <header class="barra-topo"><i aria-hidden="true"></i>Sistema<span class="abas-topo"><button type="button" data-tela="pedidos">Pedidos</button><button type="button" data-tela="painel">Painel</button></span></header>
@@ -1208,8 +1216,11 @@ window.APP = { tela: 'pedidos', modo: 'proposta' }; window.TELAS = {}
     med.style.left = Math.min(e.clientX + 16, innerWidth - med.offsetWidth - 8) + 'px'
     med.style.top = (e.clientY + 16) + 'px'
   })
+  if (new URLSearchParams(location.search).get('mode') === 'today') APP.modo = 'atual'
   const h = (location.hash || '').slice(1)
   if (TELAS[h]) APP.tela = h
   renderTela()
 })()
 </script>
+</body>
+</html>
